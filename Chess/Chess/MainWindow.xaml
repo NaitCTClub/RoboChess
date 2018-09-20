@@ -1,0 +1,21 @@
+﻿<Window x:Class="Chess.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Chess"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="450" Width="800">
+    <Grid>
+        <Image Source = "Images\ChessBoard.png"/>
+        <DockPanel>
+            <StackPanel  DockPanel.Dock="Left" Width="222"></StackPanel>
+            <Label  DockPanel.Dock="Right" Width="215"></Label>
+            <Label DockPanel.Dock="Top" Width="200" Height="37"  > </Label>
+            <Label DockPanel.Dock="Bottom" Width="200" Height="37" ></Label>
+            <UniformGrid Loaded="MyMainPanel_Loaded" Name="MyMainPanel" HorizontalAlignment="Center" VerticalAlignment="Center">
+                
+            </UniformGrid>
+        </DockPanel>
+    </Grid>
+</Window>
