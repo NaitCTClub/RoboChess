@@ -20,10 +20,16 @@ namespace Chess
         protected GamePiece(Color pieceColor, int id)
         {
             //Set the internal members from the passed in values.
-            Color = pieceColor;
+            PieceColor = pieceColor;
             ID = id;
             //All pieces start out as active.
             isAlive = true;
+
+
         }
+
+        public abstract void Move();
     }
+
+
 }
