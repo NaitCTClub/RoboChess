@@ -10,12 +10,12 @@ namespace Chess
     /**
     * @brief The pawn chess piece.
     **/
-    public class Bishop : GamePiece
+    public class King : GamePiece
     {
         /**
          * @brief Constructor for the Pawn object. Calls the constructor for the base GamePiece
          * class before it does it's own construction.
          **/
-        Bishop(Color pieceColor, int id) : base(pieceColor, id) { }
+        King(Color pieceColor, int id) : base(pieceColor, id) { }
     }
 }
