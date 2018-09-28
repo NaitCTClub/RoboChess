@@ -8,7 +8,7 @@ using System.Drawing;
 namespace Chess
 {
     /**
-    * @brief The pawn chess piece.
+    * @brief The King chess piece.
     **/
     public class King : GamePiece
     {
@@ -21,9 +21,12 @@ namespace Chess
 
         }
 
-        public override void Move()
+        public override bool CanMove(Point destinationCell)
         {
-
+            //Rules for moving the king
+            
+            //Able to move one space in any direction on the board.
+            //Can not move into a space that will allow it to be killed next turn.
         }
     }
 }
