@@ -24,9 +24,10 @@ namespace Chess
         public override bool CanMove(Point destinationCell)
         {
             //Rules for moving the king
-            
+
             //Able to move one space in any direction on the board.
             //Can not move into a space that will allow it to be killed next turn.
+            return false;
         }
     }
 }
