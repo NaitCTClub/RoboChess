@@ -15,6 +15,7 @@ namespace Chess
         public Color PieceColor { get; protected set; } //The color of the gamie piece.
         public int ID { get; protected set; }  //Identifier for the piece
         public bool isAlive { get; protected set; } //Indicates if the piece is still active on the board.
+        protected Point pos;
 
         //Constructor for the game piece object. Initialize all parameters.
         protected GamePiece(Color pieceColor, int id)
@@ -28,7 +29,7 @@ namespace Chess
 
         }
 
-        public abstract void Move();
+        public abstract bool CanMove(Point destinationCell);
     }
 
 

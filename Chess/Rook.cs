@@ -18,13 +18,13 @@ namespace Chess
             
         }
 
-        //Moving
-        /////////////////////
-        //Moves 
+        
 
-        public override void Move()
+        public override bool CanMove(Point destinationCell)
         {
-
+            //Able to move unlimited distance Horizontal or Vertically
+            return false;
+            //
         }
     }
 }
