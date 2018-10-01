@@ -7,13 +7,13 @@ using System.Drawing;
 
 namespace Chess
 {
-    public class Rook : GamePiece
+    public class Bishop : GamePiece
     {
         /**
          * @brief Constructor for the Chess object. Calls the constructor for the base GamePiece
          * class before it does it's own construction.
          **/
-        Rook(Color pieceColor, int id) : base(pieceColor, id)
+        Bishop(Color pieceColor, int id) : base(pieceColor, id)
         {
             
         }
@@ -21,11 +21,10 @@ namespace Chess
         
 
         public override bool CanMove(Point destinationCell)
-        { 
-            // Rules for moving Rook
+        {
+            //Rules for Moving Bishop
 
-            // Able to move unlimited distance Horizontal or Vertically
-  
+            //Able to move unlimited distance Diagonally in any direction.
             return false;
         }
     }

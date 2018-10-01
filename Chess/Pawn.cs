@@ -22,17 +22,21 @@ namespace Chess
         }
 
         
-        public override void Move()
+        public override bool CanMove(Point destinationCell)
         {
-            // Friendly moving
-            //////////////////////
-            // Move 2 on first move
-            // Move 1 thereafter
 
-            // Attack moving
-            //////////////////////
+            // Rules for moving Pawn
+            // Neutral move
+
+            // Move 2 in the forward direction on first move
+            // Move 1 in the forward direcion thereafter
+
+            // Attack move
+
             // Forward Diagonal 1 position, only possible with opponent 
             // Piece in location
+
+            return false;
 
         }
 

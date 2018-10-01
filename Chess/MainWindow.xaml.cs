@@ -36,6 +36,8 @@ namespace Chess
                 Temp.Content = $"{y}{i}";
                 Temp.HorizontalAlignment = HorizontalAlignment.Stretch;
                 Temp.VerticalAlignment = VerticalAlignment.Stretch;
+                Temp.Background = new SolidColorBrush(Colors.Red) { Opacity = 0.2 };
+                //Temp.Background.Opacity = 0.7;
                 //Temp.Margin = new Thickness(2);
                 Temp.Click += Temp_Click;
                 MyMainPanel.Children.Add(Temp);
