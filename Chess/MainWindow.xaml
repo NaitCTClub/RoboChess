@@ -3,11 +3,12 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:Chess"
+        xmlns:UI="clr-namespace:Chess.Properties"
+        xmlns:local="clr-namespace:Chess" 
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
-    <Grid>
-        <Image Source = "ChessBoard.png"/>
+    <Grid Name="MainGrid">
+        <!--<Image Source = "{Binding {x:Static UI:}}" ></Image>-->
         <DockPanel>
             <StackPanel  DockPanel.Dock="Left" Width="222"></StackPanel>
             <Label  DockPanel.Dock="Right" Width="215"></Label>

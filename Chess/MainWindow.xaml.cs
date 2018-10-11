@@ -51,6 +51,9 @@ namespace Chess
                     i++;
                 }
             }
+
+            ImageBrush myBrush = new ImageBrush();
+            Image image = new Image();
         }
 
         private void Temp_Click(object sender, RoutedEventArgs e)
