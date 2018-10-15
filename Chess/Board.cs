@@ -78,6 +78,8 @@ namespace Chess
             //Get Bool array of all possible blind moves for specific Gamepiece
             bool[,] possibleMove = cells[cell.X, cell.Y].PossibleMove();
 
+            // Will NEED to be changed
+            // CanMove Array should be mapped from Gamepiece location outward
             for (int y = 0; y < 8; y++)
             {
                 for (int x = 0; x < 8; x++)
