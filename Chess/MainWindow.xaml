@@ -3,16 +3,15 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:UI="clr-namespace:Chess.Properties"
         xmlns:local="clr-namespace:Chess" 
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
     <Grid Name="MainGrid">
-        <!--<Image Source = "{Binding {x:Static UI:}}" ></Image>-->
+        <Image HorizontalAlignment="Center" Cursor="None" Source="Resources/ChessBoard.PNG"/>
         <DockPanel>
             <StackPanel  DockPanel.Dock="Left" Width="222"></StackPanel>
             <Label  DockPanel.Dock="Right" Width="215"></Label>
-            <Label DockPanel.Dock="Top" Width="200" Height="37" Background="Red" Opacity="0.2" > </Label>
+            <Label DockPanel.Dock="Top" Height="37" Background="AliceBlue" Opacity="0.8" Content="May the best Man/Bot Win!" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"></Label>
             <Label DockPanel.Dock="Bottom" Width="200" Height="37" ></Label>
             <UniformGrid Loaded="MyMainPanel_Loaded" Name="MyMainPanel" HorizontalAlignment="Center" VerticalAlignment="Center">
                 

@@ -16,18 +16,26 @@ namespace Chess
          * @brief Constructor for the Pawn object. Calls the constructor for the base GamePiece
          * class before it does it's own construction.
          **/
-        King(Color pieceColor, int id) : base(pieceColor, id)
+        public King(Color pieceColor, Point id) : base(pieceColor, id)
         {
 
         }
 
-        public override bool CanMove(Point destinationCell)
+        // Constructor for initializing a variable a base class variable
+        // so Gamepiece methods can directly be called from Main Board
+        public King()
         {
+            //Leave Blank
+        }
+
+        public override bool[,] PossibleMove()
+        {
+            bool[,] result = new bool[8, 8];
             //Rules for moving the king
 
             //Able to move one space in any direction on the board.
             //Can not move into a space that will allow it to be killed next turn.
-            return false;
+            return result;
         }
     }
 }

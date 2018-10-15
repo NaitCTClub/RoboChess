@@ -13,19 +13,20 @@ namespace Chess
          * @brief Constructor for the Chess object. Calls the constructor for the base GamePiece
          * class before it does it's own construction.
          **/
-        Bishop(Color pieceColor, int id) : base(pieceColor, id)
+        public Bishop(Color pieceColor, Point id) : base(pieceColor, id)
         {
             
         }
+    
+      
 
-        
-
-        public override bool CanMove(Point destinationCell)
+        public override bool[,] PossibleMove()
         {
+            bool[,] result = new bool[8, 8];
             //Rules for Moving Bishop
 
             //Able to move unlimited distance Diagonally in any direction.
-            return false;
+            return result;
         }
     }
 }

@@ -13,20 +13,21 @@ namespace Chess
          * @brief Constructor for the Chess object. Calls the constructor for the base GamePiece
          * class before it does it's own construction.
          **/
-        Rook(Color pieceColor, int id) : base(pieceColor, id)
+        public Rook(Color pieceColor, Point id) : base(pieceColor, id)
         {
             
         }
 
         
 
-        public override bool CanMove(Point destinationCell)
-        { 
+        public override bool[,] PossibleMove()
+        {
+            bool[,] result = new bool[8, 8];
             // Rules for moving Rook
 
             // Able to move unlimited distance Horizontal or Vertically
-  
-            return false;
+
+            return result;
         }
     }
 }

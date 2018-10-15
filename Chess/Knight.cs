@@ -13,15 +13,16 @@ namespace Chess
          * @brief Constructor for the Chess object. Calls the constructor for the base GamePiece
          * class before it does it's own construction.
          **/
-        Knight(Color pieceColor, int id) : base(pieceColor, id)
+        public Knight(Color pieceColor, Point id) : base(pieceColor, id)
         {
             
         }
 
         
 
-        public override bool CanMove(Point destinationCell)
+        public override bool[,] PossibleMove()
         {
+            bool[,] result = new bool[8, 8];
             // Rules for moving Knight
 
             // Moves in strict L shape in any orientation
@@ -32,7 +33,7 @@ namespace Chess
             // b) 1 step perpendicular of step a)
             // Step a) & b) can be made in any order.
 
-            return false;
+            return result;
         }
     }
 }
