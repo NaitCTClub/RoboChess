@@ -26,8 +26,17 @@ namespace Chess
             // Rules for moving Rook
 
             // Able to move unlimited distance Horizontal or Vertically
+            for (int y = 0; y < 8; y++)
+            {
+                for (int x = 0; x < 8; x++)
+                {
+                    if((this.Location.X == x && this.Location.Y != y) || (this.Location.Y == y && this.Location.X != x))
+                        result[x, y] = true;
+                }
 
-            return result;
+            }
+
+                    return result;
         }
     }
 }

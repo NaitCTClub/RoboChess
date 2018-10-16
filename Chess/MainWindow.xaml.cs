@@ -45,6 +45,7 @@ namespace Chess
                     cell.Width = 44;
                     cell.Height = 44;
                     cell.Name =  $"C{x}{y}";
+                    cell.CommandParameter = 
                     cell.HorizontalAlignment = HorizontalAlignment.Stretch;
                     cell.VerticalAlignment = VerticalAlignment.Stretch;
                     if(((y+x) % 2) == 0 || y+x == 0)
@@ -62,6 +63,8 @@ namespace Chess
         private void Cell_Click(object sender, RoutedEventArgs e)
         {
             int x = 0, y = 0, count = 0;
+
+            // Parsing x and y coordinated of button
             foreach (char c in ((Button)sender).Name)
             {
                 if (count == 1)
@@ -71,7 +74,8 @@ namespace Chess
                 count++;
             }
 
-            HighlightCells(board.SelectCell(new System.Drawing.Point(x,y)));
+            // Find possible Moves for Game Piece
+            HighlightCells(board.SelectCell(x,y));
 
 
             if (!(board.cells[x, y] == null))

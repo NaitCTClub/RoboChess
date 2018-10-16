@@ -23,8 +23,8 @@ namespace Chess
         {
             //Set the internal members from the passed in values.
             PieceColor = pieceColor;
-            ID = id;
-            Location = id;
+            ID = id; //Default Location
+            Location = id; //Current Location
             //All pieces start out as active.
             isAlive = true;
         }
