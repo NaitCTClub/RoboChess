@@ -32,6 +32,8 @@ namespace Chess
         public System.Drawing.Point Position { get; }
 
         public State CellState { get; set; } = State.NoMove;
+
+        public bool Visited { get; set; } = false;
         public Cell(int height, int width, System.Drawing.Point pos)
         {
             Position = pos;

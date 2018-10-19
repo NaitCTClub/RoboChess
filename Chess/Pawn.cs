@@ -32,25 +32,25 @@ namespace Chess
                 vertical *= -1;
 
             //By default a pawn can move forward one cell.
-            if (Utils.InRange(Location.X + vertical, 0, Board.BOARD_SIZE-1))
-                result.Add(board[Location.X + vertical, Location.X]);
+            if (Utils.InRange(Location.Y + vertical, 0, Board.BOARD_SIZE-1))
+                result.Add(board[Location.X, Location.Y + 1 * vertical]);
 
             // Move 2 in the forward direction on first move
             if (Location == ID)
-                if (Utils.InRange(Location.X + 2 * vertical, 0, Board.BOARD_SIZE-1))
-                    result.Add(board[Location.X + 2 * vertical, Location.X]);
+                if (Utils.InRange(Location.Y + 2 * vertical, 0, Board.BOARD_SIZE-1))
+                    result.Add(board[Location.X, Location.Y + 2 * vertical]);
 
             // Forward Diagonal 1 position, only possible with opponent 
             // Piece in location
-            if (Utils.InRange(Location.X + vertical, 0, Board.BOARD_SIZE-1))
+            if (Utils.InRange(Location.Y + vertical, 0, Board.BOARD_SIZE-1))
             {
-                if (Utils.InRange(Location.Y + 1, 0, Board.BOARD_SIZE - 1))
-                    if (board[Location.X + vertical, Location.Y + 1].Piece != null)
-                        result.Add(board[Location.X + vertical, Location.Y + 1]);
+                if (Utils.InRange(Location.X + 1, 0, Board.BOARD_SIZE - 1))
+                    if (board[Location.Y + vertical, Location.X + 1].Piece != null)
+                        result.Add(board[Location.X + 1,Location.Y + vertical]);
 
-                if (Utils.InRange(Location.Y - 1, 0, Board.BOARD_SIZE - 1))
-                    if (board[Location.X + vertical, Location.Y - 1].Piece != null)
-                        result.Add(board[Location.X + vertical, Location.Y - 1]);
+                if (Utils.InRange(Location.X - 1, 0, Board.BOARD_SIZE - 1))
+                    if (board[Location.Y + vertical, Location.X - 1].Piece != null)
+                        result.Add(board[Location.X - 1, Location.Y + vertical]);
             }             
 
             return result;
