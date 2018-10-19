@@ -20,9 +20,9 @@ namespace Chess
     
       
 
-        public override bool[,] PossibleMove()
+        public override List<Point> PossibleMoves()
         {
-            bool[,] result = new bool[8, 8];
+            List<Point> result = new List<Point>();
             //Rules for Moving Bishop
 
             //Able to move unlimited distance Diagonally in any direction.

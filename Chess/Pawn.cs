@@ -22,9 +22,9 @@ namespace Chess
         }
 
         // Possible Moves, Blind to other Game Pieces
-        public override bool[,] PossibleMove()
+        public override List<Point> PossibleMoves()
         {
-            bool[,] result = new bool[8, 8];
+            List<Point> result = new List<Point>();
             int vertical;
 
             if (this.PieceColor == Color.White)

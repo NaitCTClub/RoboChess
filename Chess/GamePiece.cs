@@ -29,19 +29,12 @@ namespace Chess
             isAlive = true;
         }
 
-        // Constructor for initializing a base class variable (King has matching method)
-        // so Gamepiece methods can directly be called from Main Board
-        protected GamePiece()
-        {
-
-        }
-
         public override string ToString()
         {
             return this.GetType().ToString();
         }
 
-        public abstract bool[,] PossibleMove();
+        public abstract List<Point> PossibleMoves();
 
         public static GamePiece StartingPiece(Point cell)
         {
