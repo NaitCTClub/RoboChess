@@ -74,6 +74,7 @@
     <Compile Include="Bishop.cs" />
     <Compile Include="Board.cs" />
     <Compile Include="Cell.cs" />
+    <Compile Include="Controller.cs" />
     <Compile Include="Player.cs" />
     <Compile Include="Queen.cs" />
     <Compile Include="Knight.cs" />
