@@ -9,11 +9,15 @@ namespace Chess
 {
     public class Board
     {
-        public GamePiece[,] cells = new GamePiece[8, 8];
-        public Point activeCell; // Points to selected cell in [8,8], coordinates for nothing selected ->(-1, -1)  
+        public Cell[,] cells = new Cell[8, 8];
+
+        private const int CELL_SIZE = 44;
+         
+       // public GamePiece[,] cells = new GamePiece[8, 8];
+        public Cell activeCell; // Points to selected cell in [8,8], coordinates for nothing selected ->(-1, -1)  
         public Point targetCell;
-        public GamePiece[] blackDead = new GamePiece[15];
-        public GamePiece[] whiteDead = new GamePiece[15];
+        public List<GamePiece> blackDead = new List<GamePiece>();
+        public List<GamePiece> whiteDead = new List<GamePiece>();
         public Player playerOne;
         public Player playerTwo;
         public Player WhosTurn;
@@ -27,7 +31,8 @@ namespace Chess
                 {
                     for (int x = 0; x < 8; x++)
                     {
-                        cells[x, y] = gamePiece.StartingPiece(new Point(x, y));
+                    cells[x, y] = new Cell(CELL_SIZE, CELL_SIZE, new System.Windows.Point(x, y));
+                        cells[x, y].Piece = GamePiece.StartingPiece(new Point(x, y));
                     }
                 }
             playerOne = new Player(Color.White, "Player One");
@@ -44,112 +49,61 @@ namespace Chess
                 WhosTurn = playerOne;
         }
 
-        public int[,] SelectCell(int x, int y)
+        public void SelectCell(Cell cell)
         {
-            int[,] canMove = new int[8,8];
 
-            if (!(cells[x, y] is null))
+            if (!(cell.Piece is null))
             {
                 // select piece that belong to active player
-                if (cells[x, y].PieceColor == WhosTurn.TeamColor)
+                if (cell.Piece.PieceColor == WhosTurn.TeamColor)
                 {
-                    activeCell = new Point(x,y);
-                    canMove = CanMove(activeCell);
+                    activeCell = cell;
+                    CanMove(activeCell);
                 }
                 // non selectable (Selected Other player's gamepiece)
                 else
                 {
-                    activeCell = new Point(-1,-1);
+                    activeCell = null;
                 }
             }
             // non selectable (Selected an empty cell)
             else
             {
-                activeCell = new Point(-1, -1);
+                activeCell = null;
             }
-            return canMove;
         }
 
         // Highlights possible moves for selected Gamepiece
         //
         // NOTE requires a catch for pawns to prevent diagonal neutral movents 
-        public int[,] CanMove(Point cell)
+        public void CanMove(Cell cell)
         {
-            int[,] result = new int[8,8];
-            string activeGP = gpToStr(cells[cell.X, cell.Y]);
+            List<Cell> result = new List<Cell>();
 
             //Get Bool array of all possible blind moves for specific Gamepiece
-            bool[,] possibleMove = cells[cell.X, cell.Y].PossibleMove();
-
+            bool[,] possibleMove = cells[(int)cell.Position.X, (int)cell.Position.Y].Piece.PossibleMove();
+            GamePiece activeGP = cell.Piece;
 
             // Will NEED to be changed
             // CanMove Array should be mapped from Gamepiece location outward
             //
-            Point testPoint = new Point();
             int xDir; // Test Direction x
             int yDir; // Test Direction y
             // testing possible moves from active gamepiece outward
             // 8 Possible Directions to test
-            for (int i = 1; i <= 8; i++)
+            for(int x = (int)cell.Position.X -1; x <= (int)cell.Position.X + 1; x++ )
+                for (int y = (int)cell.Position.Y - 1; y <= (int)cell.Position.Y + 1; y++)
+                    for (int i = 1; i <= 8; i++)
             {
-                // Up & Left
-                if (i == 1)
+                        Point testPoint = new Point(x, y);
+                        while (testPoint.X <= 7 && testPoint.X >= 0 && testPoint.Y <= 7 && testPoint.Y >= 0)
                 {
-                    xDir = -1;
-                    yDir = -1;
-                }
-                // Up
-                else if(i == 2)
-                {
-                    xDir = 0;
-                    yDir = -1;
-                }
-                // Up & Right
-                else if (i == 3)
-                {
-                    xDir = 1;
-                    yDir = -1;
-                }
-                // Right
-                else if (i == 4)
-                {
-                    xDir = 1;
-                    yDir = 0;
-                }
-                // Down & Right
-                else if (i == 5)
-                {
-                    xDir = 1;
-                    yDir = 1;
-                }
-                // Down
-                else if (i == 6)
-                {
-                    xDir = 0;
-                    yDir = 1;
-                }
-                // Down & left
-                else if (i == 7)
-                {
-                    xDir = -1;
-                    yDir = 1;
-                }
-                // Left
-                else
-                {
-                    xDir = -1;
-                    yDir = 0;
-                }
-
-                testPoint.X = cell.X + xDir;
-                testPoint.Y = cell.Y + yDir;
-                while (testPoint.X <= 7 && testPoint.X >= 0 && testPoint.Y <= 7 && testPoint.Y >= 0)
-                {
-                    if (possibleMove[testPoint.X, testPoint.Y])
+                    if (possibleMove[x, y])
                     {
-                        result[testPoint.X, testPoint.Y] = InvestigateMove(testPoint.X, testPoint.Y, activeGP);
+
+                        result[x, y] = InvestigateMove(cells[x, y], activeGP);
                         // Stop once you hit a filled cell, only Knight can bypass
-                        if (result[testPoint.X, testPoint.Y] != 1 && activeGP != "Knight")
+                        if (result[x, y] != 1 && !(activeGP is Knight))
                             break;
                     }
                     else
@@ -157,31 +111,26 @@ namespace Chess
                     testPoint.X += xDir;
                     testPoint.Y += yDir;
                 }
-
             }
-            // Return int array
-            // 0 = NOT possible move
-            // 1 = possible NEUTRAL move
-            // 2 = possible ATTACK move
-            return result;
         }
 
+
+
         // Investigates if a blind move is valid
-        private int InvestigateMove(int x, int y, string activeGP)
+        private int InvestigateMove(Cell blindCell, GamePiece activeGP)
         {
-            GamePiece blindGP = cells[x, y];
             // cell is empty
-            if (blindGP is null)
+            if (blindCell.Piece is null)
             {
                 // Set as possible NEUTRAL
                 // Pawns are the exception with no diagonal neutral moves
-                if (!(activeGP == "Pawn" && x != activeCell.X))
+                if (!(activeGP is Pawn && blindCell.Position.X != activeCell.Position.X))
                     return 1;
                 else
                     return 0;
             }
             // cell is currently owned already by player
-            else if (cells[x, y].PieceColor == WhosTurn.TeamColor)
+            else if (blindCell.Piece.PieceColor == WhosTurn.TeamColor)
             {
                 // Do Nothing, impossible move
                 return 0;
@@ -191,29 +140,11 @@ namespace Chess
             {
                 // set as possible ATTACK
                 // Pawns are the exception with no straight attack moves
-                if (!(activeGP == "Pawn" && x == activeCell.X))
+                if (!(activeGP is Pawn && blindCell.Position.X == activeCell.Position.X))
                     return 2;
                 else
                     return 0;
             }
-        }
-
-        public string gpToStr(GamePiece gPiece)
-        {
-            if (gPiece is Pawn)
-                return "Pawn";
-            else if (gPiece is Rook)
-                return "Rook";
-            else if (gPiece is Knight)
-                return "Knight";
-            else if (gPiece is Bishop)
-                return "Bishop";
-            else if (gPiece is Queen)
-                return "Queen";
-            else if (gPiece is King)
-                return "King";
-            else
-                return null;
         }
 
         public int InRange(int value)

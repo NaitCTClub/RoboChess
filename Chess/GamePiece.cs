@@ -36,9 +36,14 @@ namespace Chess
 
         }
 
+        public override string ToString()
+        {
+            return this.GetType().ToString();
+        }
+
         public abstract bool[,] PossibleMove();
 
-        public GamePiece StartingPiece(Point cell)
+        public static GamePiece StartingPiece(Point cell)
         {
             Color color = Color.Red;
 
