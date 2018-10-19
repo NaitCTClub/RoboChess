@@ -25,8 +25,6 @@ namespace Chess
 
         public Board()
         {
-            //cells[3,3] = new Rook(Color.White, new Point(3,3)); //Test subjects
-            
             for (int y = 0; y < 8; y++)
                 {
                     for (int x = 0; x < 8; x++)
@@ -77,12 +75,9 @@ namespace Chess
         //
         // NOTE requires a catch for pawns to prevent diagonal neutral movents 
         public void CanMove(Cell cell)
-        {
-            List<Cell> result = new List<Cell>();
-
+        {         
             //Get Bool array of all possible blind moves for specific Gamepiece
             bool[,] possibleMove = cells[(int)cell.Position.X, (int)cell.Position.Y].Piece.PossibleMove();
-            GamePiece activeGP = cell.Piece;
 
             // Will NEED to be changed
             // CanMove Array should be mapped from Gamepiece location outward
@@ -101,58 +96,46 @@ namespace Chess
                     if (possibleMove[x, y])
                     {
 
-                        result[x, y] = InvestigateMove(cells[x, y], activeGP);
+                        InvestigateMove(cells[x, y]);
                         // Stop once you hit a filled cell, only Knight can bypass
-                        if (result[x, y] != 1 && !(activeGP is Knight))
+                        if (cells[x, y].CellState != Cell.State.Neutral && !(activeCell.Piece is Knight))
                             break;
                     }
                     else
                         break;
-                    testPoint.X += xDir;
-                    testPoint.Y += yDir;
                 }
             }
         }
 
-
-
         // Investigates if a blind move is valid
-        private int InvestigateMove(Cell blindCell, GamePiece activeGP)
+        private void InvestigateMove(Cell blindCell)
         {
             // cell is empty
             if (blindCell.Piece is null)
             {
                 // Set as possible NEUTRAL
                 // Pawns are the exception with no diagonal neutral moves
-                if (!(activeGP is Pawn && blindCell.Position.X != activeCell.Position.X))
-                    return 1;
+                if (!(activeCell.Piece is Pawn && blindCell.Position.X != activeCell.Position.X))
+                   blindCell.CellState = Cell.State.Neutral;
                 else
-                    return 0;
+                    blindCell.CellState = Cell.State.NoMove;
             }
             // cell is currently owned already by player
             else if (blindCell.Piece.PieceColor == WhosTurn.TeamColor)
             {
                 // Do Nothing, impossible move
-                return 0;
+                blindCell.CellState = Cell.State.NoMove;
             }
             // cell is currently owned by Other player
             else
             {
                 // set as possible ATTACK
                 // Pawns are the exception with no straight attack moves
-                if (!(activeGP is Pawn && blindCell.Position.X == activeCell.Position.X))
-                    return 2;
+                if (!(activeCell.Piece is Pawn && blindCell.Position.X == activeCell.Position.X))
+                    blindCell.CellState = Cell.State.Attack;
                 else
-                    return 0;
+                    blindCell.CellState = Cell.State.NoMove;
             }
-        }
-
-        public int InRange(int value)
-        {
-            int max = 7;
-            int min = 0;
-            int result = Math.Max(Math.Min(value, max), min);
-            return result;
         }
     }
 }
