@@ -18,52 +18,43 @@ namespace Chess
          **/
         public Pawn(Color pieceColor, Point id) : base(pieceColor, id)
         {
-              
+
         }
 
         // Possible Moves, Blind to other Game Pieces
-        public override List<Point> PossibleMoves()
+        public override List<Cell> PossibleMoves(Cell[,] board)
         {
-            List<Point> result = new List<Point>();
-            int vertical;
+            List<Cell> result = new List<Cell>();
+            int vertical = 1;
 
-            if (this.PieceColor == Color.White)
-                vertical = -1;
-            else
-                vertical = +1;
+            //Determine the movement direction based on color.
+            if (PieceColor == Color.White)
+                vertical *= -1;
 
-
-            // Rules for moving Pawn
-            // Neutral move
+            //By default a pawn can move forward one cell.
+            if (Utils.InRange(Location.X + vertical, 0, Board.BOARD_SIZE-1))
+                result.Add(board[Location.X + vertical, Location.X]);
 
             // Move 2 in the forward direction on first move
-            if(this.Location == this.ID)
-            {
-                result[this.Location.X, InRange(this.Location.Y + vertical)] = true;
-                result[this.Location.X, InRange(this.Location.Y + 2 * vertical)] = true;
-            }
-            // Move 1 in the forward direcion thereafter
-            else
-                result[this.Location.X, InRange(this.Location.Y + vertical)] = true;
-            // Attack move
+            if (Location == ID)
+                if (Utils.InRange(Location.X + 2 * vertical, 0, Board.BOARD_SIZE-1))
+                    result.Add(board[Location.X + 2 * vertical, Location.X]);
 
             // Forward Diagonal 1 position, only possible with opponent 
             // Piece in location
-            result[InRange(this.Location.X + 1), InRange(this.Location.Y + vertical)] = true;
-            result[InRange(this.Location.X - 1), InRange(this.Location.Y + vertical)] = true;
+            if (Utils.InRange(Location.X + vertical, 0, Board.BOARD_SIZE-1))
+            {
+                if (Utils.InRange(Location.Y + 1, 0, Board.BOARD_SIZE - 1))
+                    if (board[Location.X + vertical, Location.Y + 1].Piece != null)
+                        result.Add(board[Location.X + vertical, Location.Y + 1]);
+
+                if (Utils.InRange(Location.Y - 1, 0, Board.BOARD_SIZE - 1))
+                    if (board[Location.X + vertical, Location.Y - 1].Piece != null)
+                        result.Add(board[Location.X + vertical, Location.Y - 1]);
+            }             
 
             return result;
 
         }
-
-        // Prevents going out of Board's border
-        private int InRange(int value)
-        {
-            int max = 7;
-            int min = 0;
-            int result = Math.Max(Math.Min(value, max), min);
-            return result;
-        }
-
     }
 }

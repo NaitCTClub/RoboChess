@@ -18,15 +18,13 @@ namespace Chess
             
         }
 
-        
 
-        public override bool[,] PossibleMove()
+        public override List<Cell> PossibleMoves(Cell[,] board)
         {
-            bool[,] result = new bool[8, 8];
+            List<Cell> result = new List<Cell>();
             //Rules for moving Queen
 
             // Able to move in any direction an unlimited amount of cells
-
             return result;
         }
     }

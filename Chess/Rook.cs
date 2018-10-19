@@ -18,25 +18,18 @@ namespace Chess
             
         }
 
-        
-
-        public override bool[,] PossibleMove()
+        public override List<Cell> PossibleMoves(Cell[,] board)
         {
-            bool[,] result = new bool[8, 8];
+            List<Cell> result = new List<Cell>();
             // Rules for moving Rook
 
             // Able to move unlimited distance Horizontal or Vertically
-            for (int y = 0; y < 8; y++)
-            {
-                for (int x = 0; x < 8; x++)
-                {
-                    if((this.Location.X == x && this.Location.Y != y) || (this.Location.Y == y && this.Location.X != x))
-                        result[x, y] = true;
-                }
+            for (int y = 0; y < Board.BOARD_SIZE; y++)
+                for (int x = 0; x < Board.BOARD_SIZE; x++)
+                    if ((Location.X == x && Location.Y != y) || (Location.Y == y && Location.X != x))
+                        result.Add(board[x, y]);
 
-            }
-
-                    return result;
-        }
+            return result;
+        }        
     }
 }

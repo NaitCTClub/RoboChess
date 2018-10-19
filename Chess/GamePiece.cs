@@ -34,7 +34,7 @@ namespace Chess
             return this.GetType().ToString();
         }
 
-        public abstract List<Point> PossibleMoves();
+        public abstract List<Cell> PossibleMoves(Cell[,] board);
 
         public static GamePiece StartingPiece(Point cell)
         {

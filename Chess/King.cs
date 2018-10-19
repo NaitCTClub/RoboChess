@@ -20,21 +20,14 @@ namespace Chess
         {
 
         }
+        
 
-        // Constructor for initializing a variable a base class variable
-        // so Gamepiece methods can directly be called from Main Board
-        public King()
+        public override List<Cell> PossibleMoves(Cell[,] board)
         {
-            //Leave Blank
-        }
+            List<Cell> result = new List<Cell>();
+            //Rules for Moving Bishop
 
-        public override bool[,] PossibleMove()
-        {
-            bool[,] result = new bool[8, 8];
-            //Rules for moving the king
-
-            //Able to move one space in any direction on the board.
-            //Can not move into a space that will allow it to be killed next turn.
+            //Able to move unlimited distance Diagonally in any direction.
             return result;
         }
     }

@@ -79,6 +79,7 @@
     <Compile Include="Queen.cs" />
     <Compile Include="Knight.cs" />
     <Compile Include="Rook.cs" />
+    <Compile Include="Utils.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

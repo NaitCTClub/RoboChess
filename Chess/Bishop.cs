@@ -17,12 +17,12 @@ namespace Chess
         {
             
         }
-    
-      
 
-        public override List<Point> PossibleMoves()
+
+
+        public override List<Cell> PossibleMoves(Cell[,] board)
         {
-            List<Point> result = new List<Point>();
+            List<Cell> result = new List<Cell>();
             //Rules for Moving Bishop
 
             //Able to move unlimited distance Diagonally in any direction.

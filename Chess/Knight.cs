@@ -18,13 +18,10 @@ namespace Chess
             
         }
 
-        
 
-        public override bool[,] PossibleMove()
+        public override List<Cell> PossibleMoves(Cell[,] board)
         {
-            bool[,] result = new bool[8, 8];
-            // Rules for moving Knight
-
+            List<Cell> result = new List<Cell>();
             // Moves in strict L shape in any orientation
             // The Knight can jump over any other piece in the path
             // to its destination cell.
@@ -32,7 +29,6 @@ namespace Chess
             // a) 2 steps in one direction 
             // b) 1 step perpendicular of step a)
             // Step a) & b) can be made in any order.
-
             return result;
         }
     }

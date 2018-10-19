@@ -12,27 +12,27 @@ namespace Chess
         public Cell[,] cells = new Cell[8, 8];
 
         private const int CELL_SIZE = 44;
-         
-       // public GamePiece[,] cells = new GamePiece[8, 8];
+        public const int BOARD_SIZE = 8;
+
+        // public GamePiece[,] cells = new GamePiece[8, 8];
         public Cell activeCell; // Points to selected cell in [8,8], coordinates for nothing selected ->(-1, -1)  
+        List<Cell> possibleMoves;
         public Point targetCell;
         public List<GamePiece> blackDead = new List<GamePiece>();
         public List<GamePiece> whiteDead = new List<GamePiece>();
         public Player playerOne;
         public Player playerTwo;
         public Player WhosTurn;
-        GamePiece gamePiece = new King();
 
         public Board()
         {
-            for (int y = 0; y < 8; y++)
-                {
-                    for (int x = 0; x < 8; x++)
+            for (int y = 0; y < BOARD_SIZE; y++)
+                    for (int x = 0; x < BOARD_SIZE; x++)
                     {
-                    cells[x, y] = new Cell(CELL_SIZE, CELL_SIZE, new System.Windows.Point(x, y));
+                    cells[x, y] = new Cell(CELL_SIZE, CELL_SIZE, new Point(x, y));
                         cells[x, y].Piece = GamePiece.StartingPiece(new Point(x, y));
                     }
-                }
+                
             playerOne = new Player(Color.White, "Player One");
             playerTwo = new Player(Color.Black, "Player Two");
             WhosTurn = playerOne;
@@ -49,13 +49,13 @@ namespace Chess
 
         public void SelectCell(Cell cell)
         {
-
             if (!(cell.Piece is null))
             {
                 // select piece that belong to active player
                 if (cell.Piece.PieceColor == WhosTurn.TeamColor)
                 {
                     activeCell = cell;
+                    possibleMoves = cells[(int)cell.Position.X, (int)cell.Position.Y].Piece.PossibleMoves(cells);
                     CanMove(activeCell);
                 }
                 // non selectable (Selected Other player's gamepiece)
@@ -75,35 +75,29 @@ namespace Chess
         //
         // NOTE requires a catch for pawns to prevent diagonal neutral movents 
         public void CanMove(Cell cell)
-        {         
-            //Get Bool array of all possible blind moves for specific Gamepiece
-            bool[,] possibleMove = cells[(int)cell.Position.X, (int)cell.Position.Y].Piece.PossibleMove();
-
-            // Will NEED to be changed
-            // CanMove Array should be mapped from Gamepiece location outward
-            //
-            int xDir; // Test Direction x
-            int yDir; // Test Direction y
-            // testing possible moves from active gamepiece outward
-            // 8 Possible Directions to test
-            for(int x = (int)cell.Position.X -1; x <= (int)cell.Position.X + 1; x++ )
-                for (int y = (int)cell.Position.Y - 1; y <= (int)cell.Position.Y + 1; y++)
-                    for (int i = 1; i <= 8; i++)
+        {  
+            if (cell != activeCell)
             {
-                        Point testPoint = new Point(x, y);
-                        while (testPoint.X <= 7 && testPoint.X >= 0 && testPoint.Y <= 7 && testPoint.Y >= 0)
-                {
-                    if (possibleMove[x, y])
-                    {
+                if (possibleMoves.Contains(cell))
+                    InvestigateMove(cell);
+            }
 
-                        InvestigateMove(cells[x, y]);
-                        // Stop once you hit a filled cell, only Knight can bypass
-                        if (cells[x, y].CellState != Cell.State.Neutral && !(activeCell.Piece is Knight))
-                            break;
-                    }
-                    else
-                        break;
-                }
+            int x = (int)cell.Position.X;
+            int y = (int)cell.Position.Y;
+
+            if (cell.CellState == Cell.State.Neutral || cell == activeCell){
+                //Check one above
+                if (Utils.InRange(y + 1, 0, BOARD_SIZE-1) && possibleMoves.Contains(cells[x, y + 1]))
+                    CanMove(cells[x, y + 1]);
+                //Check below
+                if (Utils.InRange(y - 1, 0, BOARD_SIZE-1) && possibleMoves.Contains(cells[x, y - 1]))
+                    CanMove(cells[x, y - 1]);
+                //Check left
+                if (Utils.InRange(x - 1, 0, BOARD_SIZE-1) && possibleMoves.Contains(cells[x - 1, y]))
+                    CanMove(cells[x - 1, y]);
+                //Check right
+                if (Utils.InRange(x + 1, 0, BOARD_SIZE-1) && possibleMoves.Contains(cells[x + 1, y]))
+                    CanMove(cells[x + 1, y - 1]);
             }
         }
 

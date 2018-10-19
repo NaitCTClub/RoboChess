@@ -51,6 +51,8 @@ namespace Chess
             foreach (Cell c in board.cells)
                 if (ReferenceEquals(c.CellButton, (Button)sender)) cell = c;
 
+            board.SelectCell(cell);
+
             // Find possible Moves for Game Piece
             HighlightCells();
 

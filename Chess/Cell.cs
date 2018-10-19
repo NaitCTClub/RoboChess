@@ -29,10 +29,10 @@ namespace Chess
         public Button CellButton { get; } = new Button();
 
         public GamePiece Piece { get; set; } = null;
-        public Point Position { get; }
+        public System.Drawing.Point Position { get; }
 
         public State CellState { get; set; } = State.NoMove;
-        public Cell(int height, int width, Point pos)
+        public Cell(int height, int width, System.Drawing.Point pos)
         {
             Position = pos;
 
