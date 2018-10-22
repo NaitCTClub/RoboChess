@@ -11,7 +11,7 @@
         <DockPanel>
             <StackPanel  DockPanel.Dock="Left" Width="222"></StackPanel>
             <Label  DockPanel.Dock="Right" Width="215"></Label>
-            <Label DockPanel.Dock="Top" Height="37" Background="AliceBlue" Opacity="0.8" Content="May the best Man/Bot Win!" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"></Label>
+            <Label Name ="lHeader" DockPanel.Dock="Top" Height="37" Background="AliceBlue" Opacity="0.8" Content="May the best Man/Bot Win!" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"></Label>
             <Label DockPanel.Dock="Bottom" Width="200" Height="37" ></Label>
             <UniformGrid Loaded="MyMainPanel_Loaded" Name="MyMainPanel" HorizontalAlignment="Center" VerticalAlignment="Center">
                 

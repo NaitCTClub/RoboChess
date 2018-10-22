@@ -21,8 +21,8 @@ namespace Chess
     public partial class MainWindow : Window
     {
 
-        Board board = new Board();
-        public Button[,] bCellArray = new Button[8,8];
+        static Board board = new Board();
+        public static Button[,] bCellArray = new Button[8,8];
 
         SolidColorBrush darkCell = new SolidColorBrush(Colors.Gray) { Opacity = 0.8 };
         SolidColorBrush lightCell = new SolidColorBrush(Colors.LightGray) { Opacity = 0.8 };
@@ -51,8 +51,10 @@ namespace Chess
 
         }
 
-        private void Cell_Click(object sender, RoutedEventArgs e)
+        public void Cell_Click(object sender, RoutedEventArgs e)
         {
+
+
             int x = 0, y = 0, count = 0;
 
             // Parsing x and y coordinated of button
@@ -71,9 +73,6 @@ namespace Chess
 
             if (!(board.cells[x, y] == null))
             {
-                Title = board.cells[x, y].GetType().ToString();
-
-
                 // if(cells[x,y].Equals(new King()))
                 Title += " The piece is " + ((GamePiece)board.cells[x, y]).isAlive + " " + 
                                             ((GamePiece)board.cells[x, y]).PieceColor + " " + 
@@ -86,7 +85,7 @@ namespace Chess
 
         }
 
-        private void HighlightCells(int[,] moveableArray)
+        private static void HighlightCells(int[,] moveableArray)
         {
             if (!(moveableArray is null))
             {
@@ -96,20 +95,20 @@ namespace Chess
                     {
                         // Selected Cell-
                         if (board.activeCell.X == x && board.activeCell.Y == y)
-                            bCellArray[x, y].Background = activeCell;
+                            bCellArray[x, y].Background = Cell.activeCell;
                         // Neutral move cell
                         else if (moveableArray[x, y] == 1)
-                            bCellArray[x, y].Background = neutralMove;
+                            bCellArray[x, y].Background = Cell.neutralMove;
                         // Attackable Cell
                         else if (moveableArray[x, y] == 2)
-                            bCellArray[x, y].Background = attackMove;
+                            bCellArray[x, y].Background = Cell.attackMove;
                         // Set to Default
                         else
                         {
                             if (((y + x) % 2) == 0 || y + x == 0)
-                                bCellArray[x, y].Background = lightCell;
+                                bCellArray[x, y].Background = Cell.lightCell;
                             else
-                                bCellArray[x, y].Background = darkCell;
+                                bCellArray[x, y].Background = Cell.darkCell;
                         }
                     }
                 }

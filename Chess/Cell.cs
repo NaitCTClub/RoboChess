@@ -17,11 +17,13 @@ namespace Chess
 {
     public class Cell
     {
-        public readonly SolidColorBrush darkCell = new SolidColorBrush(Colors.Gray) { Opacity = 0.8 };
+        // Testing access modifiers, dont read too much into the different styles
+        // Jon Klassen
+        public static readonly SolidColorBrush darkCell = new SolidColorBrush(Colors.Gray) { Opacity = 0.8 };
         public static readonly SolidColorBrush lightCell = new SolidColorBrush(Colors.LightGray) { Opacity = 0.8 };
-        static SolidColorBrush activeCell = new SolidColorBrush(Colors.Yellow) { Opacity = 0.8 };
-        static SolidColorBrush neutralMove = new SolidColorBrush(Colors.Blue) { Opacity = 0.8 };
-        static SolidColorBrush attackMove = new SolidColorBrush(Colors.Red) { Opacity = 0.8 };
+        public static SolidColorBrush activeCell = new SolidColorBrush(Colors.Yellow) { Opacity = 0.8 };
+        public static SolidColorBrush neutralMove = new SolidColorBrush(Colors.Blue) { Opacity = 0.8 };
+        public static SolidColorBrush attackMove = new SolidColorBrush(Colors.Red) { Opacity = 0.8 };
 
         public Point ID { get; protected set; }
         public int Height { get; protected set; }
@@ -43,6 +45,8 @@ namespace Chess
             newCell.Width = Width;
             newCell.Height = Height;
             newCell.Name = Name;
+
+            // Sequence for creating the Board's pattern in the UI
             if (((this.ID.Y + this.ID.X) % 2) == 0 || this.ID.Y + this.ID.X == 0)
                 newCell.Background = lightCell;
             else
