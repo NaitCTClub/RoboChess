@@ -35,7 +35,6 @@ namespace Chess
                 }
 
             }
-
                     return result;
         }
     }

@@ -21,7 +21,7 @@ namespace Chess
 
         public Board()
         {
-            //cells[3,3] = new Rook(Color.White, new Point(3,3)); //Test subjects
+            cells[3,3] = new Rook(Color.White, new Point(3,3)); //Test subjects
             
             for (int y = 0; y < 8; y++)
                 {

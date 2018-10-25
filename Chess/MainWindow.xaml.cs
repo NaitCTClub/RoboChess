@@ -45,7 +45,6 @@ namespace Chess
                     cell.Width = 44;
                     cell.Height = 44;
                     cell.Name =  $"C{x}{y}";
-                    cell.CommandParameter = 
                     cell.HorizontalAlignment = HorizontalAlignment.Stretch;
                     cell.VerticalAlignment = VerticalAlignment.Stretch;
                     if(((y+x) % 2) == 0 || y+x == 0)
