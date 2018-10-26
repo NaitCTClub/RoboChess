@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Documents;
@@ -12,6 +11,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Drawing;
 
 namespace Chess
 {
@@ -29,6 +29,8 @@ namespace Chess
         public int Height { get; protected set; }
         public int Width { get; protected set; }
         public string Name { get; protected set; }
+        public GamePiece CurrentGamePiece { get; protected set; }
+        public Button UIButton { get; protected set; }
 
 
         public Cell(int x, int y)
@@ -37,22 +39,35 @@ namespace Chess
             Height = 44;
             Name = $"C{x}{y}";
             ID = new Point(x, y);
+            CurrentGamePiece = GamePiece.StartingPiece(new Point(x, y));
+            UIButton = new Button
+            {
+                Width = Width,
+                Height = Height,
+                Name = Name,
+            };
+            CellColor(0);
         }
 
-        public Button CreateButton()
+        public void CellColor(int moveability)
         {
-            Button newCell = new Button();
-            newCell.Width = Width;
-            newCell.Height = Height;
-            newCell.Name = Name;
+            // Default
+            if (moveability == 0)
+                // Sequence for creating the Board's pattern in the UI
+                if (((this.ID.Y + this.ID.X) % 2) == 0 || this.ID.Y + this.ID.X == 0)
+                    UIButton.Background = lightCell;
+                else
+                    UIButton.Background = darkCell;
 
-            // Sequence for creating the Board's pattern in the UI
-            if (((this.ID.Y + this.ID.X) % 2) == 0 || this.ID.Y + this.ID.X == 0)
-                newCell.Background = lightCell;
+            // Neutral move cell
+            else if (moveability == 1)
+                UIButton.Background = Cell.neutralMove;
+            // Attackable Cell
+            else if (moveability == 2)
+                UIButton.Background = Cell.attackMove;
+            // Active Cell
             else
-                newCell.Background = darkCell;
-
-            return newCell;
+                UIButton.Background = Cell.activeCell;
         }
 
     }

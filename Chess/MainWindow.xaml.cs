@@ -12,6 +12,8 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Drawing;
+using Point = System.Drawing.Point;
 
 namespace Chess
 {
@@ -20,15 +22,16 @@ namespace Chess
     /// </summary>
     public partial class MainWindow : Window
     {
+        public Point ActiveCell; // Points to selected cell in [8,8], coordinates for nothing selected ->(-1, -1)  
+        public Point TargetCell;
+        public List<GamePiece> blackDead;
+        public List<GamePiece> whiteDead;
+        public Player playerOne;
+        public Player playerTwo;
+        public Player WhosTurn;
+        public int[,] argArray = new int[8,8]; // Array for board comparison (canMove, etc)
 
-        static Board board = new Board();
-        public static Button[,] bCellArray = new Button[8,8];
-
-        SolidColorBrush darkCell = new SolidColorBrush(Colors.Gray) { Opacity = 0.8 };
-        SolidColorBrush lightCell = new SolidColorBrush(Colors.LightGray) { Opacity = 0.8 };
-        SolidColorBrush activeCell= new SolidColorBrush(Colors.Yellow) { Opacity = 0.8 };
-        SolidColorBrush neutralMove = new SolidColorBrush(Colors.Blue) { Opacity = 0.8 };
-        SolidColorBrush attackMove = new SolidColorBrush(Colors.Red) { Opacity = 0.8 };
+        Board board = new Board();
 
         public MainWindow()
         {
@@ -37,40 +40,19 @@ namespace Chess
 
         private void MyMainPanel_Loaded(object sender, RoutedEventArgs e)
         {
-            for (int y = 0; y < 8 ; y++)
-            {
-                for (int x = 0; x < 8; x++)
-                {
-<<<<<<< HEAD
-                    Button cell = new Button();
-                    cell.Width = 44;
-                    cell.Height = 44;
-                    cell.Name =  $"C{x}{y}";
-                    cell.HorizontalAlignment = HorizontalAlignment.Stretch;
-                    cell.VerticalAlignment = VerticalAlignment.Stretch;
-                    if(((y+x) % 2) == 0 || y+x == 0)
-                        cell.Background = lightCell;
-                    else
-                        cell.Background = darkCell;
-                    cell.Click += Cell_Click;
-                    MyMainPanel.Children.Add(cell);
-                    buttonArray[x, y] = cell;
-=======
-                    Cell cTemp = new Cell(x, y);
-                    Button bTemp = cTemp.CreateButton();
-                    bTemp.Click += Cell_Click;
-                    MyMainPanel.Children.Add(bTemp);
-                    bCellArray[x, y] = bTemp;
->>>>>>> f7d51049fca60480a476f3f77f8b09359f01936d
-                }
-            }
+            // Delegate the Cell to the UI of THIS MainWindow
+            board.delButtons = LinkButton;
+            board.GenerateBoard();
+        }
 
+        public void LinkButton(Cell c)
+        {
+            c.UIButton.Click += Cell_Click;
+            MyMainPanel.Children.Add(c.UIButton);
         }
 
         public void Cell_Click(object sender, RoutedEventArgs e)
         {
-
-
             int x = 0, y = 0, count = 0;
 
             // Parsing x and y coordinated of button
@@ -83,51 +65,48 @@ namespace Chess
                 count++;
             }
 
+            //Printing gamepiece for UI temporary effect
+            PrintGamePiece(board.CellArray[x, y].CurrentGamePiece);
+
             // Find possible Moves for Game Piece
-            HighlightCells(board.SelectCell(x,y));
-
-
-            if (!(board.cells[x, y] == null))
-            {
-                // if(cells[x,y].Equals(new King()))
-                Title += " The piece is " + ((GamePiece)board.cells[x, y]).isAlive + " " + 
-                                            ((GamePiece)board.cells[x, y]).PieceColor + " " + 
-                                            ((GamePiece)board.cells[x, y]).ID;
-            }
-            else
-            {
-                Title = "Empty space";
-            }
+            ActiveCell = board.SelectCell(new Point(x,y));
+            // Exit if invalid selection was made
+            if (ActiveCell == new Point(-1, -1))
+                return;
+            // Find Array of moveable positions
+            argArray = board.CanMove(ActiveCell);
+            // Highlight possible moves for player in UI
+            HighlightCells(argArray);
 
         }
 
-        private static void HighlightCells(int[,] moveableArray)
+        private void HighlightCells(int[,] moveableArray)
         {
-            if (!(moveableArray is null))
+            if (moveableArray is null)
+                return;
+
+            for (int y = 0; y < 8; y++)
             {
-                for (int y = 0; y < 8; y++)
+                for (int x = 0; x < 8; x++)
                 {
-                    for (int x = 0; x < 8; x++)
-                    {
-                        // Selected Cell-
-                        if (board.activeCell.X == x && board.activeCell.Y == y)
-                            bCellArray[x, y].Background = Cell.activeCell;
-                        // Neutral move cell
-                        else if (moveableArray[x, y] == 1)
-                            bCellArray[x, y].Background = Cell.neutralMove;
-                        // Attackable Cell
-                        else if (moveableArray[x, y] == 2)
-                            bCellArray[x, y].Background = Cell.attackMove;
-                        // Set to Default
-                        else
-                        {
-                            if (((y + x) % 2) == 0 || y + x == 0)
-                                bCellArray[x, y].Background = Cell.lightCell;
-                            else
-                                bCellArray[x, y].Background = Cell.darkCell;
-                        }
-                    }
+                    board.CellArray[x, y].CellColor(moveableArray[x, y]);
                 }
+            }
+            
+        }
+
+        private void PrintGamePiece(GamePiece gp)
+        {
+            if (gp is null)
+            {
+                Title = "Empty space";
+            }
+            else
+            {
+                // if(cells[x,y].Equals(new King()))
+                Title = " The piece is " + gp + " " +
+                                            gp.PieceColor + " " +
+                                            gp.ID;
             }
         }
     }

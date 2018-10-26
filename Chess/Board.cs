@@ -9,32 +9,44 @@ namespace Chess
 {
     public class Board
     {
-        public GamePiece[,] cells = new GamePiece[8, 8];
-        public Point activeCell; // Points to selected cell in [8,8], coordinates for nothing selected ->(-1, -1)  
-        public Point targetCell;
-        public GamePiece[] blackDead = new GamePiece[15];
-        public GamePiece[] whiteDead = new GamePiece[15];
+        //public GamePiece[,] cells = new GamePiece[8, 8];
+        public Cell[,] CellArray = new Cell[8, 8];
+        public Point ActiveCell; // Points to selected cell in [8,8], coordinates for nothing selected ->(-1, -1)  
+        public Point TargetCell;
+        public List<GamePiece> BlackDead;
+        public List<GamePiece> WhiteDead;
         public Player playerOne;
         public Player playerTwo;
         public Player WhosTurn;
-        GamePiece gamePiece = new King();
+        //GamePiece gamePiece = new King(); Not needed anymore I believe jk
+
+        public delegate void DelCell(Cell c);
+        public DelCell delButtons = null;
 
         public Board()
         {
-            cells[3,3] = new Rook(Color.White, new Point(3,3)); //Test subjects
-            
+
+        }
+
+        public void GenerateBoard()
+        {
+            //cells[3,3] = new Rook(Color.White, new Point(3,3)); //Test subjects
+
             for (int y = 0; y < 8; y++)
+            {
+                for (int x = 0; x < 8; x++)
                 {
-                    for (int x = 0; x < 8; x++)
-                    {
-                        cells[x, y] = gamePiece.StartingPiece(new Point(x, y));
-                    }
+                    Cell cTemp = new Cell(x, y);
+                    // Delegate the Cell to the UI of MainWindow
+                    delButtons?.Invoke(cTemp);
+                    CellArray[x, y] = cTemp;
                 }
+            }
+
             playerOne = new Player(Color.White, "Player One");
             playerTwo = new Player(Color.Black, "Player Two");
             WhosTurn = playerOne;
         }
-
         // Toggles active player after a move
         public void NextTurn()
         {
@@ -44,47 +56,36 @@ namespace Chess
                 WhosTurn = playerOne;
         }
 
-        public int[,] SelectCell(int x, int y)
+        public Point SelectCell(Point cellSelected)
         {
-            int[,] canMove = new int[8,8];
-
-            if (!(cells[x, y] is null))
+            int x = cellSelected.X;
+            int y = cellSelected.Y;
+            if (CellArray[x, y].CurrentGamePiece is null)
+                return new Point(-1, -1);
+            // cell selected contains valid player's gamepiece
+            if (CellArray[x,y].CurrentGamePiece.PieceColor == WhosTurn.TeamColor)
             {
                 // select piece that belong to active player
-                if (cells[x, y].PieceColor == WhosTurn.TeamColor)
-                {
-                    activeCell = new Point(x,y);
-                    canMove = CanMove(activeCell);
-                }
-                // non selectable (Selected Other player's gamepiece)
-                else
-                {
-                    activeCell = new Point(-1,-1);
-                }
+                return cellSelected;   
             }
-            // non selectable (Selected an empty cell)
+            // non selectable (Selected an empty cell or other player)
             else
-            {
-                activeCell = new Point(-1, -1);
-            }
-            return canMove;
+                return new Point(-1, -1);
         }
 
         // Highlights possible moves for selected Gamepiece
         //
         // NOTE requires a catch for pawns to prevent diagonal neutral movents 
-        public int[,] CanMove(Point cell)
+        public int[,] CanMove(Point activeCell)
         {
+            int x = activeCell.X;
+            int y = activeCell.Y;
             int[,] result = new int[8,8];
-            string activeGP = gpToStr(cells[cell.X, cell.Y]);
+            GamePiece activeGP = CellArray[x, y].CurrentGamePiece;
 
             //Get Bool array of all possible blind moves for specific Gamepiece
-            bool[,] possibleMove = cells[cell.X, cell.Y].PossibleMove();
+            bool[,] possibleMove = activeGP.PossibleMove();
 
-
-            // Will NEED to be changed
-            // CanMove Array should be mapped from Gamepiece location outward
-            //
             Point testPoint = new Point();
             int xDir; // Test Direction x
             int yDir; // Test Direction y
@@ -141,15 +142,15 @@ namespace Chess
                     yDir = 0;
                 }
 
-                testPoint.X = cell.X + xDir;
-                testPoint.Y = cell.Y + yDir;
+                testPoint.X = activeCell.X + xDir;
+                testPoint.Y = activeCell.Y + yDir;
                 while (testPoint.X <= 7 && testPoint.X >= 0 && testPoint.Y <= 7 && testPoint.Y >= 0)
                 {
                     if (possibleMove[testPoint.X, testPoint.Y])
                     {
                         result[testPoint.X, testPoint.Y] = InvestigateMove(testPoint.X, testPoint.Y, activeGP);
                         // Stop once you hit a filled cell, only Knight can bypass
-                        if (result[testPoint.X, testPoint.Y] != 1 && activeGP != "Knight")
+                        if (result[testPoint.X, testPoint.Y] != 1 && !(activeGP is Knight))
                             break;
                     }
                     else
@@ -167,21 +168,21 @@ namespace Chess
         }
 
         // Investigates if a blind move is valid
-        private int InvestigateMove(int x, int y, string activeGP)
+        private int InvestigateMove(int x, int y, GamePiece activeGP)
         {
-            GamePiece blindGP = cells[x, y];
+            GamePiece blindGP = CellArray[x, y].CurrentGamePiece;
             // cell is empty
             if (blindGP is null)
             {
                 // Set as possible NEUTRAL
                 // Pawns are the exception with no diagonal neutral moves
-                if (!(activeGP == "Pawn" && x != activeCell.X))
+                if (!(blindGP is Pawn && x != ActiveCell.X))
                     return 1;
                 else
                     return 0;
             }
             // cell is currently owned already by player
-            else if (cells[x, y].PieceColor == WhosTurn.TeamColor)
+            else if (blindGP.PieceColor == WhosTurn.TeamColor)
             {
                 // Do Nothing, impossible move
                 return 0;
@@ -191,14 +192,14 @@ namespace Chess
             {
                 // set as possible ATTACK
                 // Pawns are the exception with no straight attack moves
-                if (!(activeGP == "Pawn" && x == activeCell.X))
+                if (!(activeGP is Pawn && x == ActiveCell.X))
                     return 2;
                 else
                     return 0;
             }
         }
 
-        public string gpToStr(GamePiece gPiece)
+        public string GpToStr(GamePiece gPiece)
         {
             if (gPiece is Pawn)
                 return "Pawn";

@@ -4,21 +4,17 @@
 winexe
 C#
 .cs
-C:\Users\Jon\Documents\GitHub\RoboChess\Chess\obj\Debug\
+C:\Users\John\Desktop\GitHub\RoboChess\Chess\obj\Debug\
 Chess
 none
 false
 DEBUG;TRACE
-C:\Users\Jon\Documents\GitHub\RoboChess\Chess\App.xaml
+C:\Users\John\Desktop\GitHub\RoboChess\Chess\App.xaml
 11151548125
 
-<<<<<<< HEAD
-18570548133
-=======
 16895745602
->>>>>>> f7d51049fca60480a476f3f77f8b09359f01936d
 14434534373
 MainWindow.xaml;
 
-True
+False
 
