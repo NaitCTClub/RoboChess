@@ -16,9 +16,7 @@ namespace Chess
         public Queen(Color pieceColor, Point id) : base(pieceColor, id)
         {
             
-        }
-
-        
+        }        
 
         public override bool[,] PossibleMove()
         {

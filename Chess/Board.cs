@@ -47,6 +47,7 @@ namespace Chess
             playerTwo = new Player(Color.Black, "Player Two");
             WhosTurn = playerOne;
         }
+
         // Toggles active player after a move
         public void NextTurn()
         {

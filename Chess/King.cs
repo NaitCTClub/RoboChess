@@ -20,14 +20,7 @@ namespace Chess
         {
 
         }
-
-        // Constructor for initializing a variable a base class variable
-        // so Gamepiece methods can directly be called from Main Board
-        public King()
-        {
-            //Leave Blank
-        }
-
+        
         public override bool[,] PossibleMove()
         {
             bool[,] result = new bool[8, 8];

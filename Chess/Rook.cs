@@ -16,9 +16,7 @@ namespace Chess
         public Rook(Color pieceColor, Point id) : base(pieceColor, id)
         {
             
-        }
-
-        
+        }        
 
         public override bool[,] PossibleMove()
         {

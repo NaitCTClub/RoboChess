@@ -33,6 +33,7 @@ namespace Chess
         public Button UIButton { get; protected set; }
 
 
+        // Constructor
         public Cell(int x, int y)
         {
             Width = 44;
