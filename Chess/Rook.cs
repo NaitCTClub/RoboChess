@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Drawing;
+using System.Windows.Media.Imaging;
 
 namespace Chess
 {
@@ -15,25 +16,30 @@ namespace Chess
          **/
         public Rook(Color pieceColor, Point id) : base(pieceColor, id)
         {
-            
+            if (TeamColor == Color.Black)
+                Img = new System.Windows.Controls.Image()
+                {
+                    Source = new BitmapImage(new Uri("Resources/blackRook.png", UriKind.Relative))
+                };
+            else
+                Img = new System.Windows.Controls.Image()
+                {
+                    Source = new BitmapImage(new Uri("Resources/whiteRook.png", UriKind.Relative))
+                };
         }        
 
-        public override bool[,] PossibleMove()
+        // Instructions for moving rook
+        public override List<BlindMove> BlindMoves()
         {
-            bool[,] result = new bool[8, 8];
-            // Rules for moving Rook
+            List<BlindMove> blindMoves = new List<BlindMove>();
 
             // Able to move unlimited distance Horizontal or Vertically
-            for (int y = 0; y < 8; y++)
-            {
-                for (int x = 0; x < 8; x++)
-                {
-                    if((this.Location.X == x && this.Location.Y != y) || (this.Location.Y == y && this.Location.X != x))
-                        result[x, y] = true;
-                }
+            blindMoves.Add(new BlindMove(new Point(1, 0), -1));
+            blindMoves.Add(new BlindMove(new Point(-1, 0), -1));
+            blindMoves.Add(new BlindMove(new Point(0, 1), -1));
+            blindMoves.Add(new BlindMove(new Point(0, -1), -1));
 
-            }
-                    return result;
+            return blindMoves;
         }
     }
 }

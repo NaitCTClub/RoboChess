@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Drawing;
+using System.Windows.Media.Imaging;
 
 namespace Chess
 {
@@ -15,12 +16,21 @@ namespace Chess
          **/
         public Knight(Color pieceColor, Point id) : base(pieceColor, id)
         {
-            
+            if (TeamColor == Color.Black)
+                Img = new System.Windows.Controls.Image()
+                {
+                    Source = new BitmapImage(new Uri("Resources/blackKnight.png", UriKind.Relative))
+                };
+            else
+                Img = new System.Windows.Controls.Image()
+                {
+                    Source = new BitmapImage(new Uri("Resources/whiteKnight.png", UriKind.Relative))
+                };
         }        
 
-        public override bool[,] PossibleMove()
+        public override List<BlindMove> BlindMoves()
         {
-            bool[,] result = new bool[8, 8];
+            List<BlindMove> blindMoves = new List<BlindMove>();
             // Rules for moving Knight
 
             // Moves in strict L shape in any orientation
@@ -30,8 +40,16 @@ namespace Chess
             // a) 2 steps in one direction 
             // b) 1 step perpendicular of step a)
             // Step a) & b) can be made in any order.
+            blindMoves.Add(new BlindMove(new Point(-2, 1), 1));
+            blindMoves.Add(new BlindMove(new Point(-1, 2), 1));
+            blindMoves.Add(new BlindMove(new Point(1, 2), 1));
+            blindMoves.Add(new BlindMove(new Point(2, 1), 1));
+            blindMoves.Add(new BlindMove(new Point(2, -1), 1));
+            blindMoves.Add(new BlindMove(new Point(1, -2), 1));
+            blindMoves.Add(new BlindMove(new Point(-1, -2), 1));
+            blindMoves.Add(new BlindMove(new Point(-2, -1), 1));
 
-            return result;
+            return blindMoves;
         }
     }
 }

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Drawing;
+using System.Windows.Media.Imaging;
 
 namespace Chess
 {
@@ -18,17 +19,35 @@ namespace Chess
          **/
         public King(Color pieceColor, Point id) : base(pieceColor, id)
         {
-
+            if (TeamColor == Color.Black)
+                Img = new System.Windows.Controls.Image()
+                {
+                    Source = new BitmapImage(new Uri("Resources/blackKing.png", UriKind.Relative))
+                };
+            else
+                Img = new System.Windows.Controls.Image()
+                {
+                    Source = new BitmapImage(new Uri("Resources/whiteKing.png", UriKind.Relative))
+                };
         }
         
-        public override bool[,] PossibleMove()
+        public override List<BlindMove> BlindMoves()
         {
-            bool[,] result = new bool[8, 8];
+            List<BlindMove> blindMoves = new List<BlindMove>();
             //Rules for moving the king
 
             //Able to move one space in any direction on the board.
             //Can not move into a space that will allow it to be killed next turn.
-            return result;
+            blindMoves.Add(new BlindMove(new Point(1, 0), 1));
+            blindMoves.Add(new BlindMove(new Point(1, 1), 1));
+            blindMoves.Add(new BlindMove(new Point(0, 1), 1));
+            blindMoves.Add(new BlindMove(new Point(-1, 1), 1));
+            blindMoves.Add(new BlindMove(new Point(-1, 0), 1));
+            blindMoves.Add(new BlindMove(new Point(-1, -1), 1));
+            blindMoves.Add(new BlindMove(new Point(0, -1), 1));
+            blindMoves.Add(new BlindMove(new Point(1, -1), 1));
+
+            return blindMoves;
         }
     }
 }

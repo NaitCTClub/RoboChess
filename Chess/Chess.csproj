@@ -139,5 +139,19 @@
   <ItemGroup>
     <Resource Include="Resources\ChessBoard.PNG" />
   </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\blackBishop.png" />
+    <Resource Include="Resources\blackKing.png" />
+    <Resource Include="Resources\blackKnight.png" />
+    <Resource Include="Resources\blackPawn.png" />
+    <Resource Include="Resources\blackQueen.png" />
+    <Resource Include="Resources\blackRook.png" />
+    <Resource Include="Resources\whiteBishop.png" />
+    <Resource Include="Resources\whiteKing.png" />
+    <Resource Include="Resources\whiteKnight.png" />
+    <Resource Include="Resources\whitePawn.png" />
+    <Resource Include="Resources\whiteQueen.png" />
+    <Resource Include="Resources\whiteRook.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
