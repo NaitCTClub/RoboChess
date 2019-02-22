@@ -10,11 +10,11 @@
         <Image HorizontalAlignment="Center" Cursor="None" Source="Resources/ChessBoard.PNG"/>
         <DockPanel>
             <StackPanel  DockPanel.Dock="Left" Width="222"></StackPanel>
-            <Label  DockPanel.Dock="Right" Width="215"></Label>
+            <UniformGrid  Name="UI_DockRight" DockPanel.Dock="Right" Width="215"></UniformGrid>
             <Label Name ="lHeader" DockPanel.Dock="Top" Height="37" Background="AliceBlue" Opacity="0.8" Content="May the best Man/Bot Win!" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"></Label>
-            <Label DockPanel.Dock="Bottom" Width="200" Height="37" ></Label>
+            <UniformGrid DockPanel.Dock="Bottom" Width="200" Height="37" ></UniformGrid>
             <UniformGrid Loaded="MyMainPanel_Loaded" Name="MyMainPanel" HorizontalAlignment="Center" VerticalAlignment="Center">
-                
+
             </UniformGrid>
         </DockPanel>
     </Grid>

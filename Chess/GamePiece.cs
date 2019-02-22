@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Media;
 using System.Drawing;
+using Color = System.Drawing.Color;
 
 namespace Chess
 {
@@ -12,24 +14,39 @@ namespace Chess
      **/
     public abstract class GamePiece
     {
-        public Color PieceColor { get; protected set; } //The color of the gamie piece.
+        // Specific Instruction for blind moves for game piece
+        public struct BlindMove
+        {
+            public Point Direction;
+            public int Limit;
+            public Cell.State Condition;
+            public BlindMove(Point dir, int limit, Cell.State condition = Cell.State.Default)
+            {
+                Direction = dir;
+                Limit = limit; // -1 = unlimited
+                Condition = condition;
+            }
+        }
+
+        public Color TeamColor { get; protected set; } //The color of the Team 
         public Point ID { get; protected set; }  //Identifier & starting location for the piece
-        public Point Location { get; protected set; } //Current location
+        public Point Location { get; set; } //Current location
         public bool isAlive { get; protected set; } //Indicates if the piece is still active on the board.
         protected Point pos;
+        public System.Windows.Controls.Image Img { get; set; }
 
         //Constructor for the game piece object. Initialize all parameters.
         protected GamePiece(Color pieceColor, Point id)
         {
             //Set the internal members from the passed in values.
-            PieceColor = pieceColor;
+            TeamColor = pieceColor;
             ID = id; //Default Location
             Location = id; //Current Location
             //All pieces start out as active.
             isAlive = true;
         }
 
-        public abstract bool[,] PossibleMove();
+        public abstract List<BlindMove> BlindMoves();
 
         public static GamePiece StartingPiece(Point cell)
         {

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Drawing;
+using System.Windows.Media.Imaging;
 
 namespace Chess
 {
@@ -18,19 +19,29 @@ namespace Chess
          **/
         public Pawn(Color pieceColor, Point id) : base(pieceColor, id)
         {
-              
+            if (TeamColor == Color.Black)
+                Img = new System.Windows.Controls.Image()
+                {
+                    Source = new BitmapImage(new Uri("Resources/blackPawn.png", UriKind.Relative))
+                };
+            else
+                Img = new System.Windows.Controls.Image()
+                {
+                    Source = new BitmapImage(new Uri("Resources/whitePawn.png", UriKind.Relative))
+                };
         }
 
         // Possible Moves, Blind to other Game Pieces
-        public override bool[,] PossibleMove()
+        public override List<BlindMove> BlindMoves()
         {
-            bool[,] result = new bool[8, 8];
-            int vertical;
+            List<BlindMove> blindMoves = new List<BlindMove>();
 
-            if (this.PieceColor == Color.White)
-                vertical = -1;
+            Point direction = new Point(0,0);
+
+            if (this.TeamColor == Color.White)
+                direction.Y = -1;
             else
-                vertical = +1;
+                direction.Y = +1;
 
 
             // Rules for moving Pawn
@@ -38,32 +49,20 @@ namespace Chess
 
             // Move 2 in the forward direction on first move
             if(this.Location == this.ID)
-            {
-                result[this.Location.X, InRange(this.Location.Y + vertical)] = true;
-                result[this.Location.X, InRange(this.Location.Y + 2 * vertical)] = true;
-            }
+                blindMoves.Add(new BlindMove(direction, 2, Cell.State.Neutral));
             // Move 1 in the forward direcion thereafter
             else
-                result[this.Location.X, InRange(this.Location.Y + vertical)] = true;
+                blindMoves.Add(new BlindMove(direction, 1, Cell.State.Neutral));
             // Attack move
 
             // Forward Diagonal 1 position, only possible with opponent 
             // Piece in location
-            result[InRange(this.Location.X + 1), InRange(this.Location.Y + vertical)] = true;
-            result[InRange(this.Location.X - 1), InRange(this.Location.Y + vertical)] = true;
+            direction.X = 1;
+            blindMoves.Add(new BlindMove(direction, 1, Cell.State.Enemy));
+            direction.X = -1;
+            blindMoves.Add(new BlindMove(direction, 1, Cell.State.Enemy));
 
-            return result;
-
+            return blindMoves;
         }
-
-        // Prevents going out of Board's border
-        private int InRange(int value)
-        {
-            int max = 7;
-            int min = 0;
-            int result = Math.Max(Math.Min(value, max), min);
-            return result;
-        }
-
     }
 }
