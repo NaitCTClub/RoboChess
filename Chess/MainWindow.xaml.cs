@@ -30,6 +30,7 @@ namespace Chess
         public Player playerTwo;
         public Player WhosTurn;
         public int[,] argArray = new int[8,8]; // Array for board comparison (canMove, etc)
+        int test;
 
         Board board = new Board();
 
