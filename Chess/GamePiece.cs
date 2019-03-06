@@ -31,7 +31,7 @@ namespace Chess
         public Color TeamColor { get; protected set; } //The color of the Team 
         public Point ID { get; protected set; }  //Identifier & starting location for the piece
         public Point Location { get; set; } //Current location
-        public bool isAlive { get; protected set; } //Indicates if the piece is still active on the board.
+        public bool isAlive { get; set; } //Indicates if the piece is still active on the board.
         protected Point pos;
         public System.Windows.Controls.Image Img { get; set; }
 
@@ -40,6 +40,7 @@ namespace Chess
         {
             //Set the internal members from the passed in values.
             TeamColor = pieceColor;
+
             ID = id; //Default Location
             Location = id; //Current Location
             //All pieces start out as active.
@@ -51,6 +52,8 @@ namespace Chess
         public static GamePiece StartingPiece(Point cell)
         {
             Color color = Color.Red;
+
+            GamePiece temp = null;
 
             //Top 2 Rows
             //BLACK PIECES
@@ -70,42 +73,35 @@ namespace Chess
             //Pawn
             if (cell.Y == 1 || cell.Y == 6)
             {
-                Pawn temp = new Pawn(color, cell);
-                return temp;
+                temp = new Pawn(color, cell);
             }
             //Rook
             else if (cell.X == 0 || cell.X == 7)
             {
-                Rook temp = new Rook(color, cell);
-                return temp;
+                temp = new Rook(color, cell);
             }
             //Knight
             else if (cell.X == 1 || cell.X == 6)
             {
-                Knight temp = new Knight(color, cell);
-                return temp;
+                temp = new Knight(color, cell);
             }
             //Bishop
             else if (cell.X == 2 || cell.X == 5)
             {
-                Bishop temp = new Bishop(color, cell);
-                return temp;
+                temp = new Bishop(color, cell);
             }
             //Queen
             else if (cell.X == 3)
             {
-                Queen temp = new Queen(color, cell);
-                return temp;
+                temp = new Queen(color, cell);
             }
             //King
             else if (cell.X == 4)
             {
-                King temp = new King(color, cell);
-                return temp;
+                temp = new King(color, cell);
             }
 
-            else
-                return null;
+            return temp;
         }
     }
 

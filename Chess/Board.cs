@@ -9,11 +9,18 @@ namespace Chess
 {
     public class Board
     {
+        public struct Move
+        {
+            public GamePiece Piece;
+            public Point From;
+            public Point To;
+            public GamePiece PieceCaptured;
+        }
+
+        public List<Move> Moves = new List<Move>();
         public List<Cell> Cells = new List<Cell>();
 
         public Cell ActiveCell;
-        public List<GamePiece> BlackDead = new List<GamePiece>();
-        public List<GamePiece> WhiteDead = new List<GamePiece>();
         public Player playerOne;
         public Player playerTwo;
         public Player WhosTurn;
@@ -28,19 +35,29 @@ namespace Chess
 
         public void GenerateBoard()
         {
+            playerOne = new Player(Color.White, "Player One");
+            playerTwo = new Player(Color.Black, "Player Two");
+
             for (int y = 0; y < 8; y++)
             {
                 for (int x = 0; x < 8; x++)
                 {
                     Cell cTemp = new Cell(x, y);
+
+                    // Add gamepieces to reference list
+                    if(!(cTemp.Piece is null))
+                    {
+                        if (cTemp.Piece.TeamColor == Color.White)
+                            playerOne.Pieces.Add(cTemp.Piece);
+                        else
+                            playerTwo.Pieces.Add(cTemp.Piece);
+                    }
                     // Delegate the Cell to the UI of MainWindow
                     delButtons?.Invoke(cTemp);
                     Cells.Add(cTemp);
                 }
             }
-
-            playerOne = new Player(Color.White, "Player One");
-            playerTwo = new Player(Color.Black, "Player Two");
+            
             WhosTurn = playerOne;
         }
 
@@ -53,32 +70,26 @@ namespace Chess
                 WhosTurn = playerOne;
         }
 
-        // Checks if selection was legal
-        public bool SelectCell(Cell focusCell)
-        {
-            // Illegal - Empty space
-            if (focusCell.Piece is null)
-                return false;
-            // Illegal - Other players piece
-            if (focusCell.Piece.TeamColor != WhosTurn.TeamColor)
-                return false;
-
-            // Everything Checks out
-            return true;
-        }
-
         // Sets status of Cells for possible moves for selected Gamepiece
-        //
-        // NOTE requires a catch for pawns to prevent diagonal neutral movents 
-        public void CanMove(Cell activeCell)
+        public void CanMove(Cell focusCell)
         {
+            // Clear all previous cell statuses
+            Cells.ForEach(c => c.CellStatus(Cell.State.Default));
+
+            // illegal - Empty space
+            if (focusCell.Piece is null)
+                return;
+            // illegal - Other players piece
+            if (focusCell.Piece.TeamColor != WhosTurn.TeamColor)
+                return;
+
             //Get blind move instructions for specific Gamepiece
-            List<GamePiece.BlindMove> blindMoves = activeCell.Piece.BlindMoves();
+            List<GamePiece.BlindMove> blindMoves = focusCell.Piece.BlindMoves();
 
             foreach(GamePiece.BlindMove bMove in blindMoves)
             {
                 int moves = 0;
-                Point testPoint = AddPoints(activeCell.ID, bMove.Direction);
+                Point testPoint = AddPoints(focusCell.ID, bMove.Direction);
 
                 // Loop while in Board's bounds AND path is permited
                 while (bMove.Limit != moves && testPoint.X <= 7 && testPoint.X >= 0 && testPoint.Y <= 7 && testPoint.Y >= 0)
@@ -100,43 +111,28 @@ namespace Chess
             Cell targetCell = Cells[PointIndex(target)];
             bool continueDir = false;
 
-            // cell is empty
-            if (targetCell.Piece is null)
+            // Special Case - KING
+            if(condition == Cell.State.UnChecked)
             {
-                // Good to go
-                if (condition == Cell.State.Default || condition == Cell.State.Neutral)
-                {
-                    // Set as possible NEUTRAL
-                    targetCell.Status = Cell.State.Neutral;
-                    continueDir = true;
-                }
-                // GamePiece Condition doesn't permit it
-                else
-                {
-                    // Deny
-                    continueDir = false;
-                }
+                // Move not permitted if Opponent can attack king next turn
+                if (IsChecked(targetCell)) return false;
+            }
+
+            // cell is empty
+            if (targetCell.Piece is null && condition != Cell.State.Enemy)
+            {
+                // Set as possible NEUTRAL
+                targetCell.CellStatus(Cell.State.Neutral);
+                continueDir = true;
             }
             // cell is Enemy
-            else if (targetCell.Piece.TeamColor != WhosTurn.TeamColor)
+            else if (targetCell.Piece != null && targetCell.Piece.TeamColor != WhosTurn.TeamColor && condition != Cell.State.Neutral)
             {
-                // Good to go
-                if (condition == Cell.State.Default || condition == Cell.State.Enemy)
-                {
                     // set as possible ATTACK
-                    targetCell.Status = Cell.State.Enemy;
+                    targetCell.CellStatus(Cell.State.Enemy);
                     continueDir = false;
-                }
-                // GamePiece Condition doesn't permit it
-                else
-                {
-                    // Deny
-                    continueDir = false;
-                }
-                // set as INVALID
-                return false;
             }
-            // cell is currently owned by same player
+            // Move not permitted
             else
             {
                 // Deny
@@ -146,32 +142,91 @@ namespace Chess
             return continueDir;
         }
 
-        public void HighlightCells()
+        // Checks if Opponent can attack the cell on next turn
+        private bool IsChecked(Cell cell)
         {
-            foreach(Cell c in Cells) c.CellColor();
-        }
+            bool isChecked = false;
+            Player Opponent;
 
-        public void ClearCellsStatus()
-        {
-            foreach (Cell c in Cells)
+            if (ReferenceEquals(WhosTurn, playerOne))
+                Opponent = playerTwo;
+            else
+                Opponent = playerOne;
+
+            // Check possible moves for Opponent
+            foreach (GamePiece piece in Opponent.Pieces)
             {
-                c.Status = Cell.State.Default;
-                c.CellColor();
+                //Get blind move instructions for specific Gamepiece
+                List<GamePiece.BlindMove> blindMoves = piece.BlindMoves();
 
-                if (!(c.Piece is null))
-                    c.UIButton.Content = c.Piece.Img;
-                else
-                    c.UIButton.Content = null;
+                foreach (GamePiece.BlindMove bMove in blindMoves)
+                {
+                    int moves = 0;
+                    Point testPoint = AddPoints(piece.Location, bMove.Direction);
+
+                    // Loop while in Board's bounds AND path is permited
+                    while (bMove.Limit != moves && testPoint.X <= 7 && testPoint.X >= 0 && testPoint.Y <= 7 && testPoint.Y >= 0)
+                    {
+                        // See if can target cell in question
+                        Cell targetCell = Cells[PointIndex(testPoint)];
+                        bool continueDir = false;
+
+                        // Set as possible attack with continued direction
+                        if (targetCell.Piece is null && bMove.Condition != Cell.State.Neutral)
+                        {
+                            if (ReferenceEquals(targetCell, cell))
+                                isChecked = true;
+
+                            continueDir = true;
+                        }
+                        // direction is stopped
+                        else if (targetCell.Piece != null)
+                        {
+                            if (ReferenceEquals(targetCell, cell))
+                                isChecked = true;
+                        }
+
+                        if (isChecked) return isChecked;
+                        if (!continueDir) break;
+
+                        testPoint = AddPoints(testPoint, bMove.Direction);
+                        moves++;
+                    }
+                }
             }
+
+            return false;
         }
 
-        public int InRange(int value)
+        public Move GamePieceMove(Cell from, Cell to)
         {
-            int max = 7;
-            int min = 0;
-            int result = Math.Max(Math.Min(value, max), min);
-            return result;
+            Move newMove = new Move
+            {
+                Piece = from.Piece,
+                From = from.ID,
+                To = to.ID,
+                PieceCaptured = to.Piece
+            };
+
+            // Capture Enemy GamePiece
+            if (to.Status == Cell.State.Enemy)
+                to.Piece.isAlive = false;
+            
+
+            // Move Active GamePiece
+            to.Piece = from.Piece;
+            to.Piece.Location = to.ID;
+            from.Piece = null;
+
+            // Clear all previous cell Statuses
+            Cells.ForEach(c => c.CellStatus(Cell.State.Default));
+            ActiveCell = null;
+
+            NextTurn();
+
+            return newMove;
         }
+
 
         private Point AddPoints(Point p1, Point p2)
         {

@@ -38,14 +38,14 @@ namespace Chess
 
             //Able to move one space in any direction on the board.
             //Can not move into a space that will allow it to be killed next turn.
-            blindMoves.Add(new BlindMove(new Point(1, 0), 1));
-            blindMoves.Add(new BlindMove(new Point(1, 1), 1));
-            blindMoves.Add(new BlindMove(new Point(0, 1), 1));
-            blindMoves.Add(new BlindMove(new Point(-1, 1), 1));
-            blindMoves.Add(new BlindMove(new Point(-1, 0), 1));
-            blindMoves.Add(new BlindMove(new Point(-1, -1), 1));
-            blindMoves.Add(new BlindMove(new Point(0, -1), 1));
-            blindMoves.Add(new BlindMove(new Point(1, -1), 1));
+            blindMoves.Add(new BlindMove(new Point(1, 0), 1, Cell.State.UnChecked));
+            blindMoves.Add(new BlindMove(new Point(1, 1), 1, Cell.State.UnChecked));
+            blindMoves.Add(new BlindMove(new Point(0, 1), 1, Cell.State.UnChecked));
+            blindMoves.Add(new BlindMove(new Point(-1, 1), 1, Cell.State.UnChecked));
+            blindMoves.Add(new BlindMove(new Point(-1, 0), 1, Cell.State.UnChecked));
+            blindMoves.Add(new BlindMove(new Point(-1, -1), 1, Cell.State.UnChecked));
+            blindMoves.Add(new BlindMove(new Point(0, -1), 1, Cell.State.UnChecked));
+            blindMoves.Add(new BlindMove(new Point(1, -1), 1, Cell.State.UnChecked));
 
             return blindMoves;
         }

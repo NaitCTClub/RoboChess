@@ -18,7 +18,7 @@ namespace Chess
     public class Cell
     {
         // Jon Klassen
-        public enum State { Default, Active, Neutral, Enemy };
+        public enum State { Default, Active, Neutral, Enemy, UnChecked };
 
         public static readonly SolidColorBrush darkCell = new SolidColorBrush(Colors.Gray) { Opacity = 0.8 };
         public static readonly SolidColorBrush lightCell = new SolidColorBrush(Colors.LightGray) { Opacity = 0.8 };
@@ -31,7 +31,7 @@ namespace Chess
         private static int _Width = 44;
         public GamePiece Piece { get; set; }
         public Button UIButton { get; protected set; }
-        public State Status { get; set; } = State.Default;
+        public State Status { get; set; }
 
 
         // Constructor
@@ -47,13 +47,22 @@ namespace Chess
                 //Content = Piece.Img
         };
 
-            CellColor();
+            CellStatus(State.Default);
         }
 
 
-        public void ClearStatus()
+        public void CellStatus(State state)
         {
-            Status = State.Default;
+            // Update state enum
+            Status = state;
+            // Update Background color
+            CellColor();
+
+            // Update Gamepiece Image
+            if (!(Piece is null))
+                UIButton.Content = Piece.Img;
+            else
+                UIButton.Content = null;
         }
 
         public void CellColor()
