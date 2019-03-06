@@ -1,0 +1,9 @@
+C:\Users\jklassen31\Desktop\ChessTools\Tools\obj\Debug\netstandard2.0\Tools.csprojAssemblyReference.cache
+C:\Users\jklassen31\Desktop\ChessTools\Tools\obj\Debug\netstandard2.0\Tools.csproj.CoreCompileInputs.cache
+C:\Users\jklassen31\Desktop\ChessTools\Tools\obj\Debug\netstandard2.0\Tools.AssemblyInfoInputs.cache
+C:\Users\jklassen31\Desktop\ChessTools\Tools\obj\Debug\netstandard2.0\Tools.AssemblyInfo.cs
+C:\Users\jklassen31\Desktop\ChessTools\Tools\bin\Debug\netstandard2.0\Tools.deps.json
+C:\Users\jklassen31\Desktop\ChessTools\Tools\bin\Debug\netstandard2.0\Tools.dll
+C:\Users\jklassen31\Desktop\ChessTools\Tools\bin\Debug\netstandard2.0\Tools.pdb
+C:\Users\jklassen31\Desktop\ChessTools\Tools\obj\Debug\netstandard2.0\Tools.dll
+C:\Users\jklassen31\Desktop\ChessTools\Tools\obj\Debug\netstandard2.0\Tools.pdb

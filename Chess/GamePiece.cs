@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Windows.Media;
 using System.Drawing;
 using Color = System.Drawing.Color;
+using ChessTools;
 
 namespace Chess
 {
@@ -14,20 +15,6 @@ namespace Chess
      **/
     public abstract class GamePiece
     {
-        // Specific Instruction for blind moves for game piece
-        public struct BlindMove
-        {
-            public Point Direction;
-            public int Limit;
-            public Cell.State Condition;
-            public BlindMove(Point dir, int limit, Cell.State condition = Cell.State.Default)
-            {
-                Direction = dir;
-                Limit = limit; // -1 = unlimited
-                Condition = condition;
-            }
-        }
-
         public Color TeamColor { get; protected set; } //The color of the Team 
         public Point ID { get; protected set; }  //Identifier & starting location for the piece
         public Point Location { get; set; } //Current location

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Drawing;
+using ChessTools;
 
 namespace Chess
 {
@@ -67,83 +68,82 @@ namespace Chess
             return true;
         }
 
-        // Sets status of Cells for possible moves for selected Gamepiece
-        //
-        // NOTE requires a catch for pawns to prevent diagonal neutral movents 
-        public void CanMove(Cell activeCell)
+        /// <summary>
+        /// Sets status of Cells for possible moves for selected Gamepiece
+        /// </summary>
+        /// <param name="activeCell">Cell that owns GamePiece thats being moved</param>
+        public List<CanMove> PossibleMoves(Cell activeCell)
         {
             //Get blind move instructions for specific Gamepiece
-            List<GamePiece.BlindMove> blindMoves = activeCell.Piece.BlindMoves();
+            List<BlindMove> blindMoves = activeCell.Piece.BlindMoves();
+            List<CanMove> possibleMoves = new List<CanMove>();
 
-            foreach(GamePiece.BlindMove bMove in blindMoves)
+            foreach(BlindMove bMove in blindMoves)
             {
                 int moves = 0;
                 Point testPoint = AddPoints(activeCell.ID, bMove.Direction);
 
                 // Loop while in Board's bounds AND path is permited
-                while (bMove.Limit != moves && testPoint.X <= 7 && testPoint.X >= 0 && testPoint.Y <= 7 && testPoint.Y >= 0)
+                while (bMove.Limit != moves && InBoardsRange(testPoint))
                 {
-                    // See if path is clear & Set test Cell's status
-                    if (!InvestigateBlind(testPoint, bMove.Condition)) break;
+                    Cell targetCell = Cells[PointIndex(testPoint)];
+                    int moveType = MovePossibility(targetCell, bMove.Condition);
+
+                    // only neutral and attack moves permitted
+                    if (moveType > 0)
+                        possibleMoves.Add(new CanMove(testPoint, targetCell.Status));
+
+                    // Break if the moveType isnt neutral
+                    if (moveType != 1) break;
 
                     testPoint = AddPoints(testPoint, bMove.Direction);
                     moves++;
                 }
             }
+
+            return possibleMoves;
         }
 
-        // Investigates if a blind move is valid
-        // Returns: Bool if more moves in that direction are possible
-        // Sets: investigated Cells status
-        private bool InvestigateBlind(Point target, Cell.State condition)
+        private int MovePossibility(Cell targetCell, CellState condition)
         {
-            Cell targetCell = Cells[PointIndex(target)];
-            bool continueDir = false;
+            int result = 0;
 
             // cell is empty
             if (targetCell.Piece is null)
             {
                 // Good to go
-                if (condition == Cell.State.Default || condition == Cell.State.Neutral)
+                if (condition == CellState.Default || condition == CellState.Neutral)
                 {
                     // Set as possible NEUTRAL
-                    targetCell.Status = Cell.State.Neutral;
-                    continueDir = true;
+                    targetCell.Status = CellState.Neutral;
+                    result = 1;
                 }
                 // GamePiece Condition doesn't permit it
                 else
                 {
                     // Deny
-                    continueDir = false;
+                    result = 0;
                 }
             }
             // cell is Enemy
             else if (targetCell.Piece.TeamColor != WhosTurn.TeamColor)
             {
                 // Good to go
-                if (condition == Cell.State.Default || condition == Cell.State.Enemy)
+                if (condition == CellState.Default || condition == CellState.Enemy)
                 {
                     // set as possible ATTACK
-                    targetCell.Status = Cell.State.Enemy;
-                    continueDir = false;
+                    targetCell.Status = CellState.Enemy;
+                    result = 2;
                 }
                 // GamePiece Condition doesn't permit it
                 else
                 {
                     // Deny
-                    continueDir = false;
+                    result = 0;
                 }
-                // set as INVALID
-                return false;
-            }
-            // cell is currently owned by same player
-            else
-            {
-                // Deny
-                continueDir = false;
             }
 
-            return continueDir;
+            return result;
         }
 
         public void HighlightCells()
@@ -155,7 +155,7 @@ namespace Chess
         {
             foreach (Cell c in Cells)
             {
-                c.Status = Cell.State.Default;
+                c.Status = CellState.Default;
                 c.CellColor();
 
                 if (!(c.Piece is null))
@@ -165,12 +165,18 @@ namespace Chess
             }
         }
 
-        public int InRange(int value)
+        /// <summary>
+        /// Tests to see if Point is within Boards scope
+        /// </summary>
+        /// <param name="test"></param>
+        /// <returns>true if it is</returns>
+        public bool InBoardsRange(Point test)
         {
             int max = 7;
             int min = 0;
-            int result = Math.Max(Math.Min(value, max), min);
-            return result;
+
+            return  test.X <= max && test.X >= min && 
+                    test.Y <= max && test.Y >= min;
         }
 
         private Point AddPoints(Point p1, Point p2)
@@ -181,10 +187,14 @@ namespace Chess
             return p1;
         }
 
-        // Allows finding cell of specific point in Board.Cells List
-        private int PointIndex(Point p1)
+        /// <summary>
+        /// Allows finding cell of specific point in Board.Cells List
+        /// </summary>
+        /// <param name="cell">X & Y of cell on board</param>
+        /// <returns>Index of the cell in List of Cells for the Board</returns>
+        private int PointIndex(Point cell)
         {
-            return p1.X + (p1.Y * 8);
+            return cell.X + (cell.Y * 8);
         }
     }
 }

@@ -15,6 +15,7 @@ using System.Windows.Shapes;
 using System.Drawing;
 using Point = System.Drawing.Point;
 using Color = System.Drawing.Color;
+using ChessTools;
 
 namespace Chess
 {
@@ -50,7 +51,7 @@ namespace Chess
             // Find Cell associated to Button
             Cell focusCell = board.Cells.Find(b => ReferenceEquals(b.UIButton, (Button)sender));
 
-            if (focusCell.Status == Cell.State.Default)
+            if (focusCell.Status == CellState.Default)
             {
                 // Clear statuses
                 board.ClearCellsStatus();
@@ -62,7 +63,7 @@ namespace Chess
                 if (!board.SelectCell(focusCell)) return;
 
                 // Set cells status for moveable positions
-                board.CanMove(focusCell);
+                board.PossibleMoves(focusCell);
 
                 // Highlight possible moves for player in UI
                 board.HighlightCells();
@@ -70,7 +71,7 @@ namespace Chess
                 board.ActiveCell = focusCell;
             }
             // Move GamePiece
-            else if (focusCell.Status == Cell.State.Neutral)
+            else if (focusCell.Status == CellState.Neutral)
             {
                 // Move Active GamePiece
                 focusCell.Piece = board.ActiveCell.Piece;
@@ -83,7 +84,7 @@ namespace Chess
                 board.NextTurn();
             }
             // Attack w/ GamePiece
-            else if (focusCell.Status == Cell.State.Enemy)
+            else if (focusCell.Status == CellState.Enemy)
             {
                 // Destroy Enemy GamePiece, Move Active GamePiece
                 if (board.WhosTurn.TeamColor == Color.Black)

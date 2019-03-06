@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Drawing;
 using System.Windows.Media.Imaging;
+using ChessTools;
 
 namespace Chess
 {
@@ -49,18 +50,18 @@ namespace Chess
 
             // Move 2 in the forward direction on first move
             if(this.Location == this.ID)
-                blindMoves.Add(new BlindMove(direction, 2, Cell.State.Neutral));
+                blindMoves.Add(new BlindMove(direction, 2, CellState.Neutral));
             // Move 1 in the forward direcion thereafter
             else
-                blindMoves.Add(new BlindMove(direction, 1, Cell.State.Neutral));
+                blindMoves.Add(new BlindMove(direction, 1, CellState.Neutral));
             // Attack move
 
             // Forward Diagonal 1 position, only possible with opponent 
             // Piece in location
             direction.X = 1;
-            blindMoves.Add(new BlindMove(direction, 1, Cell.State.Enemy));
+            blindMoves.Add(new BlindMove(direction, 1, CellState.Enemy));
             direction.X = -1;
-            blindMoves.Add(new BlindMove(direction, 1, Cell.State.Enemy));
+            blindMoves.Add(new BlindMove(direction, 1, CellState.Enemy));
 
             return blindMoves;
         }
