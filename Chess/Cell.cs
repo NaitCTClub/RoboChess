@@ -48,13 +48,22 @@ namespace Chess
                 //,Content = Piece.Img
         };
 
-            CellColor();
+            CellStatus(CellState.Default);
         }
 
 
-        public void ClearStatus()
+        public void CellStatus(CellState state)
         {
-            Status = CellState.Default;
+            // Update state enum
+            Status = state;
+            // Update Background color
+            CellColor();
+
+            // Update Gamepiece Image
+            if (!(Piece is null))
+                UIButton.Content = Piece.Img;
+            else
+                UIButton.Content = null;
         }
 
         public void CellColor()

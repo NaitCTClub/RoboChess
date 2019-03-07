@@ -18,6 +18,7 @@ using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Windows.Documents;
+using System.Windows.Forms.Integration;
 using System.Windows.Ink;
 using System.Windows.Input;
 using System.Windows.Markup;
@@ -51,13 +52,21 @@ namespace Chess {
         
         #line 13 "..\..\MainWindow.xaml"
         [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1823:AvoidUnusedPrivateFields")]
+        internal System.Windows.Controls.ListBox lbMoves;
+        
+        #line default
+        #line hidden
+        
+        
+        #line 15 "..\..\MainWindow.xaml"
+        [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1823:AvoidUnusedPrivateFields")]
         internal System.Windows.Controls.Primitives.UniformGrid UI_DockRight;
         
         #line default
         #line hidden
         
         
-        #line 14 "..\..\MainWindow.xaml"
+        #line 16 "..\..\MainWindow.xaml"
         [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1823:AvoidUnusedPrivateFields")]
         internal System.Windows.Controls.Label lHeader;
         
@@ -65,7 +74,7 @@ namespace Chess {
         #line hidden
         
         
-        #line 16 "..\..\MainWindow.xaml"
+        #line 18 "..\..\MainWindow.xaml"
         [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1823:AvoidUnusedPrivateFields")]
         internal System.Windows.Controls.Primitives.UniformGrid MyMainPanel;
         
@@ -106,15 +115,18 @@ namespace Chess {
             this.MainGrid = ((System.Windows.Controls.Grid)(target));
             return;
             case 2:
-            this.UI_DockRight = ((System.Windows.Controls.Primitives.UniformGrid)(target));
+            this.lbMoves = ((System.Windows.Controls.ListBox)(target));
             return;
             case 3:
-            this.lHeader = ((System.Windows.Controls.Label)(target));
+            this.UI_DockRight = ((System.Windows.Controls.Primitives.UniformGrid)(target));
             return;
             case 4:
+            this.lHeader = ((System.Windows.Controls.Label)(target));
+            return;
+            case 5:
             this.MyMainPanel = ((System.Windows.Controls.Primitives.UniformGrid)(target));
             
-            #line 16 "..\..\MainWindow.xaml"
+            #line 18 "..\..\MainWindow.xaml"
             this.MyMainPanel.Loaded += new System.Windows.RoutedEventHandler(this.MyMainPanel_Loaded);
             
             #line default

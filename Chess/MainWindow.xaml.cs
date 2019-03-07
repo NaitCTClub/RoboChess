@@ -37,7 +37,6 @@ namespace Chess
             // Delegate the Cell to the UI of THIS MainWindow
             board.delButtons = LinkButton;
             board.GenerateBoard();
-            board.ClearCellsStatus();
         }
 
         public void LinkButton(Cell c)
@@ -53,54 +52,32 @@ namespace Chess
 
             if (focusCell.Status == CellState.Default)
             {
-                // Clear statuses
-                board.ClearCellsStatus();
-
                 //Printing gamepiece for UI temporary effect
                 Title = focusCell.ToString();
-
-                // check if legal select
-                if (!board.SelectCell(focusCell)) return;
 
                 // Set cells status for moveable positions
                 board.PossibleMoves(focusCell);
 
-                // Highlight possible moves for player in UI
-                board.HighlightCells();
-
                 board.ActiveCell = focusCell;
+
+                UI_Message("Choose target Cell");
             }
-            // Move GamePiece
-            else if (focusCell.Status == CellState.Neutral)
+            // Move GamePiece from Active Cell to Focus Cell
+            else
             {
-                // Move Active GamePiece
-                focusCell.Piece = board.ActiveCell.Piece;
-                focusCell.Piece.Location = focusCell.ID;
-                board.ActiveCell.Piece = null;
+                Board.Move move = board.GamePieceMove(board.ActiveCell, focusCell);
 
-                board.ClearCellsStatus();
-                board.ActiveCell = null;
+                UI_Message($"Go {board.WhosTurn}");
 
-                board.NextTurn();
+                lbMoves.Items.Add($"{move.Piece} {move.From} To {move.To}");
             }
-            // Attack w/ GamePiece
-            else if (focusCell.Status == CellState.Enemy)
-            {
-                // Destroy Enemy GamePiece, Move Active GamePiece
-                if (board.WhosTurn.TeamColor == Color.Black)
-                    board.WhiteDead.Add(focusCell.Piece);
-                else
-                    board.BlackDead.Add(focusCell.Piece);
+        }
 
-                focusCell.Piece = board.ActiveCell.Piece;
-                focusCell.Piece.Location = focusCell.ID;
-                board.ActiveCell.Piece = null;
+        private void UI_Message(string message)
+        {
+            //Label tempMess = new Label { Name = "Test", Content = message, VerticalAlignment = VerticalAlignment.Center, HorizontalAlignment = HorizontalAlignment.Center };
 
-                board.ClearCellsStatus();
-                board.ActiveCell = null;
-
-                board.NextTurn();
-            }
+            lHeader.Content = message;
         }
     }
 }
