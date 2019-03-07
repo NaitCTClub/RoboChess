@@ -48,11 +48,11 @@ namespace Chess
                 //,Content = Piece.Img
         };
 
-            CellStatus(CellState.Default);
+            ChangeState(CellState.Default);
         }
 
 
-        public void CellStatus(CellState state)
+        public void ChangeState(CellState state)
         {
             // Update state enum
             Status = state;
@@ -66,7 +66,7 @@ namespace Chess
                 UIButton.Content = null;
         }
 
-        public void CellColor()
+        private void CellColor()
         {
             // Default
             if (Status == CellState.Default)

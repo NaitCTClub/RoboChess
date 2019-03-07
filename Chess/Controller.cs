@@ -11,27 +11,44 @@ namespace Chess
     public class Controller
     {
         public Board board = new Board();
-        public Point ActiveCell; // Points to selected cell in [8,8], coordinates for nothing selected ->(-1, -1)  
-        public Point TargetCell;
-        public List<GamePiece> blackDead;
-        public List<GamePiece> whiteDead;
-        public Player playerOne;
-        public Player playerTwo;
-        public Player WhosTurn;
 
+        //public Player playerOne;
+        //public Player playerTwo;
+        //public Player WhosTurn;
 
-        public void CellClick(int x, int y)
+        public MainWindow GUI;
+
+        public Controller(MainWindow gui, Board brd)
         {
-            /// Find possible Moves for Game Piece
-            //board.SelectCell(x, y);
-            /// Exit if Cell is Not Owned by Player
-            //if (ActiveCell != new Point(-1, -1))
-               // return;
-            //board.CanMove(board.ActiveCell);
-            //board.HighlightCells(board.SelectCell(x, y));
-            //int[,] temp = new int[8, 8];
-            //temp = board.CanMove(ActiveCell);
+            GUI = gui;
+            board = brd;
+        }
 
+        public void CellClick(Cell focusCell)
+        {
+            if (focusCell.Status == CellState.Default)
+            {
+                //Printing gamepiece for UI temporary effect
+                focusCell.ToString();
+
+                // Set cells status for moveable positions
+                board.PossibleMoves(focusCell);
+
+                board.ActiveCell = focusCell;
+
+                GUI.RenameHeader("Choose target Cell");
+            }
+            // Move GamePiece from Active Cell to Focus Cell
+            else
+            {
+                // MOVE,CAPTURE & TOGGLE TURN
+                Board.Move move = board.GamePieceMove(board.ActiveCell, focusCell);
+
+                // Notify next player's Turn
+                GUI.RenameHeader($"Go {board.WhosTurn}");
+
+                GUI.lbMoves.Items.Add($"{move.Piece} {move.From} To {move.To}");
+            }
         }
     }
 }

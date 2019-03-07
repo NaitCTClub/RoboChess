@@ -18,10 +18,10 @@ namespace Chess
             public GamePiece PieceCaptured;
         }
 
-        public List<Move> Moves = new List<Move>();
         public List<Cell> Cells = new List<Cell>();
+        public List<Move> Moves = new List<Move>();
 
-        public Cell ActiveCell;
+        public Cell ActiveCell; // Used for Human Player
         public Player playerOne;
         public Player playerTwo;
         public Player WhosTurn;
@@ -77,146 +77,175 @@ namespace Chess
         /// <param name="activeCell">Cell that owns GamePiece thats being moved</param>
         public List<CanMove> PossibleMoves(Cell focusCell)
         {
+            // Clear all previous cell Statuses
+            Cells.ForEach(c => c.ChangeState(CellState.Default));
+
+            List<CanMove> possibleMoves = new List<CanMove>();
+
             // illegal - Empty space
             if (focusCell.Piece is null)
-                return;
+                return possibleMoves;
             // illegal - Other players piece
             if (focusCell.Piece.TeamColor != WhosTurn.TeamColor)
-                return;
+                return possibleMoves;
 
             //Get blind move instructions for specific Gamepiece
             List<BlindMove> blindMoves = focusCell.Piece.BlindMoves();
-            List<CanMove> possibleMoves = new List<CanMove>();
 
             foreach(BlindMove bMove in blindMoves)
             {
-                int moves = 0;
+                int moveCount = 0;
                 Point testPoint = AddPoints(focusCell.ID, bMove.Direction);
 
                 // Loop while in Board's bounds AND path is permited
-                while (bMove.Limit != moves && InBoardsRange(testPoint))
+                while (bMove.Limit != moveCount && InBoardsRange(testPoint))
                 {
+                    // Grab Cell associated to Point
                     Cell targetCell = Cells[PointIndex(testPoint)];
-                    int moveType = MovePossibility(targetCell, bMove.Condition);
+
+                    MoveType moveType = MovePossibility(focusCell, targetCell, bMove.Condition);
+
+                    // Highlight Cell
+                    if (moveType == MoveType.Neutral)
+                        targetCell.ChangeState(CellState.Neutral);
+                    else if (moveType == MoveType.Attack)
+                        targetCell.ChangeState(CellState.Enemy);
 
                     // only neutral and attack moves permitted
-                    if (moveType > 0)
-                        possibleMoves.Add(new CanMove(testPoint, targetCell.Status));
+                    if (moveType != MoveType.Illegal)
+                        possibleMoves.Add(new CanMove(testPoint, moveType));
 
-                    // Break if the moveType isnt neutral
-                    if (moveType != 1) break;
+                    // No more moves possible if somethings in the way
+                    if (moveType != MoveType.Neutral) break;
 
                     testPoint = AddPoints(testPoint, bMove.Direction);
-                    moves++;
+                    moveCount++;
                 }
             }
 
             return possibleMoves;
         }
 
-        private int MovePossibility(Cell targetCell, CellState condition)
+        /// <summary>
+        /// Investigates if a move is Legal
+        /// </summary>
+        /// <param name="focusCell"></param>
+        /// <param name="targetCell"></param>
+        /// <param name="condition"></param>
+        /// <returns> illegal = 0, legal neutral = 1, legal attack = 2</returns>
+        private MoveType MovePossibility(Cell focusCell, Cell targetCell, CellState condition, bool kingSafety = true)
         {
-            int result = 0;
+            MoveType result = MoveType.Illegal;
 
             // Special Case - KING
-            if(condition == Cell.State.UnChecked)
+            if(focusCell.Piece is King && kingSafety)
             {
                 // Move not permitted if Opponent can attack king next turn
-                if (IsChecked(targetCell)) return result;
+                if (!IsSafe(targetCell, false)) return result;
             }
 
             // cell is empty
-            if (targetCell.Piece is null && condition != Cell.State.Enemy)
+            if (targetCell.Piece is null && condition != CellState.Enemy)
             {
-                // Good to go
+                // Legal Neutral
                 if (condition == CellState.Default || condition == CellState.Neutral)
                 {
                     // Set as possible NEUTRAL
-                    targetCell.Status = CellState.Neutral;
-                    result = 1;
-                }
-                // GamePiece Condition doesn't permit it
-                else
-                {
-                    // Deny
-                    result = 0;
+                    result = MoveType.Neutral;
                 }
             }
             // cell is Enemy
-            else if (targetCell.Piece != null && targetCell.Piece.TeamColor != WhosTurn.TeamColor && condition != Cell.State.Neutral)
+            else if (targetCell.Piece != null && targetCell.Piece.TeamColor != WhosTurn.TeamColor && condition != CellState.Neutral)
             {
-                // Good to go
+                // Legal Attack
                 if (condition == CellState.Default || condition == CellState.Enemy)
                 {
                     // set as possible ATTACK
-                    targetCell.Status = CellState.Enemy;
-                    result = 2;
-                }
-                // GamePiece Condition doesn't permit it
-                else
-                {
-                    // Deny
-                    result = 0;
+                    result = MoveType.Attack;
                 }
             }
 
             return result;
         }
 
-        // Checks if Opponent can attack the cell on next turn
-        private bool IsChecked(Cell cell)
+        // Only Filters moves blocked by other pieces in the way
+        private List<CanMove> FilterBlindMove(Cell focusCell, BlindMove bMove)
         {
-            bool isChecked = false;
-            Player Opponent;
+            List<CanMove> result = new List<CanMove>();
 
-            if (ReferenceEquals(WhosTurn, playerOne))
-                Opponent = playerTwo;
-            else
-                Opponent = playerOne;
+            int moveCount = 0;
+            Point testPoint = AddPoints(focusCell.ID, bMove.Direction);
 
-            // Check possible moves for Opponent
-            foreach (GamePiece piece in Opponent.Pieces)
+            // Loop while in Board's bounds AND path is permited
+            while (bMove.Limit != moveCount && InBoardsRange(testPoint))
+            {
+                // Grab Cell associated to Point
+                Cell targetCell = Cells[PointIndex(testPoint)];
+
+                MoveType moveType = MoveType.Default;
+
+                if (targetCell.Piece.TeamColor == WhosTurn.TeamColor ||
+                   (targetCell.Piece.TeamColor != WhosTurn.TeamColor && bMove.Condition == CellState.Neutral))
+                    moveType = MoveType.Illegal;
+                  
+
+                if (moveType != MoveType.Illegal)
+                    result.Add(new CanMove(testPoint, moveType));
+
+                // Break if the moveType isnt neutral
+                if (!(targetCell.Piece is null)) break;
+
+                testPoint = AddPoints(testPoint, bMove.Direction);
+                moveCount++;
+            }
+
+            return result;
+        }
+
+        // Checks if Opponent can attack a cell on next turn
+        private bool IsSafe(Cell cell, bool oppKingSafety = true)
+        {
+            // Find Opponent
+            Player Opponent = ReferenceEquals(WhosTurn, playerOne) ? playerTwo : playerOne;
+
+            // Check possible moves for Opponent's Live pieces
+            foreach (GamePiece piece in Opponent.Pieces.FindAll( p => p.isAlive))
             {
                 //Get blind move instructions for specific Gamepiece
-                List<GamePiece.BlindMove> blindMoves = piece.BlindMoves();
+                List<BlindMove> blindMoves = piece.BlindMoves();
 
-                foreach (GamePiece.BlindMove bMove in blindMoves)
+                // Iterate through those moves
+                foreach (BlindMove bMove in blindMoves)
                 {
-                    int moves = 0;
-                    Point testPoint = AddPoints(piece.Location, bMove.Direction);
-
-                    // Loop while in Board's bounds AND path is permited
-                    while (bMove.Limit != moves && testPoint.X <= 7 && testPoint.X >= 0 && testPoint.Y <= 7 && testPoint.Y >= 0)
+                    // Only look at Attack permitted moves (No pawn forward moves)
+                    if (bMove.Condition != CellState.Neutral)
                     {
-                        // See if can target cell in question
-                        Cell targetCell = Cells[PointIndex(testPoint)];
-                        bool continueDir = false;
+                        Cell focusCell = Cells[PointIndex(piece.Location)];
+                        int moveCount = 0;
+                        int moveType = 0; // 0 = Neutral move
 
-                        // Set as possible attack with continued direction
-                        if (targetCell.Piece is null && bMove.Condition != Cell.State.Neutral)
+                        Point testPoint = AddPoints(piece.Location, bMove.Direction);
+
+                        // Loop while in Board's bounds AND path is permited
+                        while (bMove.Limit != moveCount && InBoardsRange(testPoint) && moveType == 0)
                         {
-                            if (ReferenceEquals(targetCell, cell))
-                                isChecked = true;
+                            // See if can target cell in question
+                            Cell targetCell = Cells[PointIndex(testPoint)];
 
-                            continueDir = true;
+                            // Find Move Type at the targetCell
+                            moveType = MovePossibility(focusCell, targetCell, bMove.Condition, oppKingSafety);
+
+                            if (ReferenceEquals(targetCell, cell) && moveType != 0)
+                                return false; // Only takes one attack
+
+                            testPoint = AddPoints(testPoint, bMove.Direction);
+                            moveCount++;
                         }
-                        // direction is stopped
-                        else if (targetCell.Piece != null)
-                        {
-                            if (ReferenceEquals(targetCell, cell))
-                                isChecked = true;
-                        }
-
-                        if (isChecked) return isChecked;
-                        if (!continueDir) break;
-
-                        testPoint = AddPoints(testPoint, bMove.Direction);
-                        moves++;
                     }
                 }
             }
 
-            return false;
+            return true;
         }
 
         /// <summary>
@@ -244,7 +273,7 @@ namespace Chess
             };
 
             // Capture Enemy GamePiece
-            if (to.Status == Cell.State.Enemy)
+            if (to.Status == CellState.Enemy)
                 to.Piece.isAlive = false;
             
 
@@ -254,7 +283,7 @@ namespace Chess
             from.Piece = null;
 
             // Clear all previous cell Statuses
-            Cells.ForEach(c => c.CellStatus(Cell.State.Default));
+            Cells.ForEach(c => c.ChangeState(CellState.Default));
             ActiveCell = null;
 
             NextTurn();

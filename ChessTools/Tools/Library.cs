@@ -7,6 +7,7 @@ namespace ChessTools
     ///  States for Cells when Player is viewing possible moves
     /// </summary>
     public enum CellState { Default, Active, Neutral, Enemy, enPassant };
+    public enum MoveType { Illegal, Default, Neutral, Attack, Safe, enPassant};
     
     /// <summary>
     /// Properties for POTENTIAL moves of a GamePiece
@@ -36,8 +37,8 @@ namespace ChessTools
     public struct CanMove
     {
         public Point Location;   // location on board
-        public CellState Type;      // style of move (Neutral, Attack, enPassant)
-        public CanMove(Point location, CellState type)
+        public MoveType Type;      // style of move (Neutral, Attack, enPassant)
+        public CanMove(Point location, MoveType type)
         {
             Location = location;
             Type = type;

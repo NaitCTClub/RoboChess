@@ -26,6 +26,7 @@ namespace Chess
     {
         // Initiates all of board's children (Cells & GamePieces)
         Board board = new Board();
+        Controller controller;
 
         public MainWindow()
         {
@@ -37,6 +38,9 @@ namespace Chess
             // Delegate the Cell to the UI of THIS MainWindow
             board.delButtons = LinkButton;
             board.GenerateBoard();
+
+            // Pass control off to Controller
+            controller = new Controller(this, board);
         }
 
         public void LinkButton(Cell c)
@@ -50,30 +54,16 @@ namespace Chess
             // Find Cell associated to Button
             Cell focusCell = board.Cells.Find(b => ReferenceEquals(b.UIButton, (Button)sender));
 
-            if (focusCell.Status == CellState.Default)
-            {
-                //Printing gamepiece for UI temporary effect
-                Title = focusCell.ToString();
-
-                // Set cells status for moveable positions
-                board.PossibleMoves(focusCell);
-
-                board.ActiveCell = focusCell;
-
-                UI_Message("Choose target Cell");
-            }
-            // Move GamePiece from Active Cell to Focus Cell
-            else
-            {
-                Board.Move move = board.GamePieceMove(board.ActiveCell, focusCell);
-
-                UI_Message($"Go {board.WhosTurn}");
-
-                lbMoves.Items.Add($"{move.Piece} {move.From} To {move.To}");
-            }
+            // Pass to Controller
+            controller.CellClick(focusCell);
         }
 
-        private void UI_Message(string message)
+        public void RenameTitle(string message)
+        {
+            Title = message;
+        }
+
+        public void RenameHeader(string message)
         {
             //Label tempMess = new Label { Name = "Test", Content = message, VerticalAlignment = VerticalAlignment.Center, HorizontalAlignment = HorizontalAlignment.Center };
 

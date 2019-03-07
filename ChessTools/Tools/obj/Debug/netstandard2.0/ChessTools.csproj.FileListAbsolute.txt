@@ -6,3 +6,12 @@ C:\Users\jklassen31\Desktop\ChessTools\Tools\obj\Debug\netstandard2.0\ChessTools
 C:\Users\jklassen31\Desktop\ChessTools\Tools\obj\Debug\netstandard2.0\ChessTools.AssemblyInfo.cs
 C:\Users\jklassen31\Desktop\ChessTools\Tools\obj\Debug\netstandard2.0\ChessTools.dll
 C:\Users\jklassen31\Desktop\ChessTools\Tools\obj\Debug\netstandard2.0\ChessTools.pdb
+C:\Users\John\Desktop\GitHub\RoboChess\ChessTools\Tools\bin\Debug\netstandard2.0\ChessTools.deps.json
+C:\Users\John\Desktop\GitHub\RoboChess\ChessTools\Tools\bin\Debug\netstandard2.0\ChessTools.dll
+C:\Users\John\Desktop\GitHub\RoboChess\ChessTools\Tools\bin\Debug\netstandard2.0\ChessTools.pdb
+C:\Users\John\Desktop\GitHub\RoboChess\ChessTools\Tools\obj\Debug\netstandard2.0\ChessTools.csprojAssemblyReference.cache
+C:\Users\John\Desktop\GitHub\RoboChess\ChessTools\Tools\obj\Debug\netstandard2.0\ChessTools.csproj.CoreCompileInputs.cache
+C:\Users\John\Desktop\GitHub\RoboChess\ChessTools\Tools\obj\Debug\netstandard2.0\ChessTools.AssemblyInfoInputs.cache
+C:\Users\John\Desktop\GitHub\RoboChess\ChessTools\Tools\obj\Debug\netstandard2.0\ChessTools.AssemblyInfo.cs
+C:\Users\John\Desktop\GitHub\RoboChess\ChessTools\Tools\obj\Debug\netstandard2.0\ChessTools.dll
+C:\Users\John\Desktop\GitHub\RoboChess\ChessTools\Tools\obj\Debug\netstandard2.0\ChessTools.pdb

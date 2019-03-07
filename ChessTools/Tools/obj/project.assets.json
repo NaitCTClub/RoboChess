@@ -30,10 +30,12 @@
   },
   "libraries": {
     "Microsoft.NETCore.Platforms/1.1.0": {
-      "sha512": "kz0PEW2lhqygehI/d6XsPCQzD7ff7gUJaVGPVETX611eadGsA3A877GdSlU0LRVMCTH/+P3o2iDTak+S08V2+A==",
+      "sha512": "a/iSwnRZb+LHFk49hQOyThh/ZNC3vsbZsF65XwQIb863qF6msmhdQtxGXFL28Ob2NsCz/drEj28BJd/YPpLRBg==",
       "type": "package",
       "path": "microsoft.netcore.platforms/1.1.0",
       "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
         "ThirdPartyNotices.txt",
         "dotnet_library_license.txt",
         "lib/netstandard1.0/_._",
@@ -176,23 +178,23 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\jklassen31\\.nuget\\packages\\": {},
-    "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder": {}
+    "C:\\Users\\John\\.nuget\\packages\\": {},
+    "c:\\program files\\dotnet\\sdk\\NuGetFallbackFolder": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\jklassen31\\Desktop\\ChessTools\\Tools\\ChessTools.csproj",
+      "projectUniqueName": "C:\\Users\\John\\Desktop\\GitHub\\RoboChess\\ChessTools\\Tools\\ChessTools.csproj",
       "projectName": "ChessTools",
-      "projectPath": "C:\\Users\\jklassen31\\Desktop\\ChessTools\\Tools\\ChessTools.csproj",
-      "packagesPath": "C:\\Users\\jklassen31\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\jklassen31\\Desktop\\ChessTools\\Tools\\obj\\",
+      "projectPath": "C:\\Users\\John\\Desktop\\GitHub\\RoboChess\\ChessTools\\Tools\\ChessTools.csproj",
+      "packagesPath": "C:\\Users\\John\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\John\\Desktop\\GitHub\\RoboChess\\ChessTools\\Tools\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
-        "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
+        "c:\\program files\\dotnet\\sdk\\NuGetFallbackFolder"
       ],
       "configFilePaths": [
-        "C:\\Users\\jklassen31\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\John\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
       "originalTargetFrameworks": [
