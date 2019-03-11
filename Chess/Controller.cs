@@ -29,10 +29,10 @@ namespace Chess
         {
             GUI = gui;
             LiveBoard = brd;
-            botPlayer = new Bot(LiveBoard, LiveBoard.playerTwo, Color.Black);
+            botPlayer = new Bot(LiveBoard, LiveBoard.playerTwo);
         }
 
-        public void CellClick(Cell focusCell)
+        public void BoardClick(Cell focusCell)
         {
 
             if (focusCell.Status == Condition.Active)
@@ -63,13 +63,39 @@ namespace Chess
 
                 BoardMove(move);
 
-                if(LiveBoard.WhosTurn == botPlayer.Me && !checkMate) // Bot Move
-                {
-                    System.Threading.Thread.Sleep(100);
-                    move = botPlayer.MyTurn();
-                    BoardMove(move);
-                }
+                BotMove(); // 
             }
+        }
+
+        private bool BotMove()
+        {
+            if (LiveBoard.WhosTurn == botPlayer.Me && !checkMate) // Bot Move
+            {
+                System.Threading.Thread.Sleep(100);
+                ChessMove move = botPlayer.MyTurn();
+                {
+                    //move.To.ChangeState(move.MoveType);
+                    //System.Threading.Thread.Sleep(200);
+                    //move.To.ChangeState(Condition.Default);
+                    //System.Threading.Thread.Sleep(200);
+                    //move.To.ChangeState(move.MoveType);
+                    //System.Threading.Thread.Sleep(200);
+                    //move.To.ChangeState(Condition.Default);
+
+                    //move.From.ChangeState(move.MoveType);
+                    //System.Threading.Thread.Sleep(200);
+                    //move.From.ChangeState(Condition.Default);
+                    //System.Threading.Thread.Sleep(200);
+                    //move.From.ChangeState(move.MoveType);
+                    //System.Threading.Thread.Sleep(200);
+                    //move.From.ChangeState(Condition.Default);
+                }
+                BoardMove(move);
+
+                return true;
+            }
+
+            return false;
         }
 
         private bool BoardMove(ChessMove move)
@@ -92,6 +118,16 @@ namespace Chess
                 GUI.RenameHeader($"Go {LiveBoard.WhosTurn}");
 
             return true;
+        }
+
+        public void CheckMate()
+        {
+            Player winner = LiveBoard.playerOne.isChecked ? LiveBoard.playerTwo : LiveBoard.playerOne;
+            Player loser = LiveBoard.playerOne.isChecked? LiveBoard.playerOne : LiveBoard.playerTwo;
+
+            checkMate = true;
+
+            GUI.RenameHeader($"CheckMate! {winner} Wins!");
         }
 
         public void ArchiveMove(ChessMove newMove)
@@ -131,16 +167,6 @@ namespace Chess
             LiveBoard.NextTurn();
 
             return true;
-        }
-
-        public void CheckMate()
-        {
-            Player winner = LiveBoard.playerOne.isChecked ? LiveBoard.playerTwo : LiveBoard.playerOne;
-            Player loser = LiveBoard.playerOne.isChecked? LiveBoard.playerOne : LiveBoard.playerTwo;
-
-            checkMate = true;
-
-            GUI.RenameHeader($"CheckMate! {winner} Wins!");
         }
     }
 }

@@ -39,7 +39,7 @@ namespace Chess
             board.delButtons = LinkButton;
             board.GenerateBoard();
 
-            // Pass control off to Controller
+            // Pass the command wand off to Controller
             controller = new Controller(this, board);
         }
 
@@ -55,7 +55,7 @@ namespace Chess
             Cell focusCell = board.Cells.Find(b => ReferenceEquals(b.UIButton, (Button)sender));
 
             // Pass to Controller
-            controller.CellClick(focusCell);
+            controller.BoardClick(focusCell);
         }
 
         public void RenameTitle(string message)

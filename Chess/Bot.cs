@@ -13,21 +13,17 @@ namespace Chess
     {
         private Board MainBoard;
         public Player Me;
-        public Color TeamColor = Color.Black;
         private Random _rando = new Random();
 
 
-        public Bot(Board board, Player player, Color teamColor)
+        public Bot(Board board, Player player)
         {
-            TeamColor = teamColor;
             MainBoard = board;
             Me = player;
         }
 
         public ChessMove MyTurn() // Controller calls this to activate Bots turn
         {
-            ChessMove newMove = new ChessMove();
-
             List<ChessMove> lsOfMoves =  FindAllPossibleMoves();
 
             if (lsOfMoves.Count == 0)
