@@ -13,6 +13,7 @@ namespace Chess
         public Color TeamColor { get; protected set; } //The color of the gamie piece.
         public string Name { get; protected set; }  //Identifier for the piece
         public List<GamePiece> Pieces { get; set; } = new List<GamePiece>();
+        public bool isChecked = false;
 
         public Player(Color color, string name)
         {

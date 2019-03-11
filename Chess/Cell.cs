@@ -32,8 +32,8 @@ namespace Chess
         private static int _Width = 44;
         public GamePiece Piece { get; set; }
         public Button UIButton { get; protected set; }
-        public CellState Status { get; set; } = CellState.Default;
-        public GamePiece enPassant { get; set; } // Identifies Pawn that used first move to 'pass' this cell (the first of two cells forward)
+        public Condition Status { get; set; } = Condition.Default; // Only Used for Human player interaction
+        public GamePiece enPassantPawn { get; set; } // Identifies Pawn that used first move to 'pass' this cell (the first of two cells forward)
 
         // Constructor
         public Cell(int x, int y)
@@ -48,11 +48,11 @@ namespace Chess
                 //,Content = Piece.Img
         };
 
-            ChangeState(CellState.Default);
+            ChangeState(Condition.Default);
         }
 
 
-        public void ChangeState(CellState state)
+        public void ChangeState(Condition state)
         {
             // Update state enum
             Status = state;
@@ -68,23 +68,25 @@ namespace Chess
 
         private void CellColor()
         {
+            // Neutral move cell
+            if (Status == Condition.Neutral)
+                UIButton.Background = neutralMove;
+            // Attackable Cell
+            else if (Status == Condition.Attack)
+                UIButton.Background = attackMove;
+            // Active Cell
+            else if (Status == Condition.Active)
+                UIButton.Background = activeCell;
+            // Enpassant Cell
+            else if (Status == Condition.enPassant)
+                UIButton.Background = attackMove;
             // Default
-            if (Status == CellState.Default)
+            else
                 // Sequence for creating the Board's pattern in the UI
                 if (((this.ID.Y + this.ID.X) % 2) == 0 || this.ID.Y + this.ID.X == 0)
                     UIButton.Background = lightCell;
                 else
                     UIButton.Background = darkCell;
-
-            // Neutral move cell
-            else if (Status == CellState.Neutral)
-                UIButton.Background = neutralMove;
-            // Attackable Cell
-            else if (Status == CellState.Enemy)
-                UIButton.Background = attackMove;
-            // Active Cell
-            else
-                UIButton.Background = activeCell;
         }
 
         public override string ToString()

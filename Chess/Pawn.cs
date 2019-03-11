@@ -14,6 +14,7 @@ namespace Chess
     **/
     public class Pawn : GamePiece
     {
+        public bool enPassant = false; // True if susceptible to an EnPassant, re-set to false after one turn
         /**
          * @brief Constructor for the Pawn object. Calls the constructor for the base GamePiece
          * class before it does it's own construction.
@@ -50,18 +51,18 @@ namespace Chess
 
             // Move 2 in the forward direction on first move
             if(this.Location == this.ID)
-                blindMoves.Add(new BlindMove(direction, 2, CellState.Neutral));
+                blindMoves.Add(new BlindMove(direction, 2, Condition.Neutral));
             // Move 1 in the forward direcion thereafter
             else
-                blindMoves.Add(new BlindMove(direction, 1, CellState.Neutral));
+                blindMoves.Add(new BlindMove(direction, 1, Condition.Neutral));
             // Attack move
 
             // Forward Diagonal 1 position, only possible with opponent 
             // Piece in location
             direction.X = 1;
-            blindMoves.Add(new BlindMove(direction, 1, CellState.Enemy));
+            blindMoves.Add(new BlindMove(direction, 1, Condition.Attack));
             direction.X = -1;
-            blindMoves.Add(new BlindMove(direction, 1, CellState.Enemy));
+            blindMoves.Add(new BlindMove(direction, 1, Condition.Attack));
 
             return blindMoves;
         }

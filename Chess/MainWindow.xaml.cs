@@ -69,5 +69,21 @@ namespace Chess
 
             lHeader.Content = message;
         }
+
+        private void UI_btnUndo_Click(object sender, RoutedEventArgs e)
+        {
+            if (controller.UndoMove())
+                lHeader.Content = "Undo move";
+            else
+                lHeader.Content = "Unable to Undo move";
+        }
+
+        private void UI_btnRedo_Click(object sender, RoutedEventArgs e)
+        {
+            if (controller.RedoMove())
+                lHeader.Content = "Redo move";
+            else
+                lHeader.Content = "Unable to redo move";
+        }
     }
 }

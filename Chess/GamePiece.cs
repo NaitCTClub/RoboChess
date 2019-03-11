@@ -90,6 +90,24 @@ namespace Chess
 
             return temp;
         }
+
+        public static void ChecknFlagEnpassant( List<Cell> cells, ChessMove move, string undo = "")
+        {
+            //Check if Pawn that went 2 steps - (Enpassant)
+            if (move.PieceMoved is Pawn && Math.Abs(move.From.ID.Y - move.To.ID.Y) == 2)
+            {
+                int step = (move.To.ID.Y - move.From.ID.Y) / 2;
+                Point firstStep = new Point(0, step);
+                Cell passedCell = cells.NextCell(move.From, firstStep);
+
+                if(undo.ToLower() == "undo")
+                    passedCell.enPassantPawn = null;
+                else
+                    passedCell.enPassantPawn = move.PieceMoved;
+
+                // Set first step as Enpassant - (Link Pawn) remove next turn
+            }
+        }
     }
 
 

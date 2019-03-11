@@ -5,23 +5,15 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Drawing;
 using ChessTools;
+using static ChessTools.Library;
 
 namespace Chess
 {
     public class Board
     {
-        public struct Move
-        {
-            public GamePiece Piece;
-            public Point From;
-            public Point To;
-            public GamePiece PieceCaptured;
-        }
-
         public List<Cell> Cells = new List<Cell>();
-        public List<Move> Moves = new List<Move>();
-
-        public Cell ActiveCell; // Used for Human Player
+        public List<ChessMove> Moves = new List<ChessMove>();
+        
         public Player playerOne;
         public Player playerTwo;
         public Player WhosTurn;
@@ -46,7 +38,7 @@ namespace Chess
                     Cell cTemp = new Cell(x, y);
 
                     // Add gamepieces to reference list
-                    if(!(cTemp.Piece is null))
+                    if (!(cTemp.Piece is null))
                     {
                         if (cTemp.Piece.TeamColor == Color.White)
                             playerOne.Pieces.Add(cTemp.Piece);
@@ -58,7 +50,7 @@ namespace Chess
                     Cells.Add(cTemp);
                 }
             }
-            
+
             WhosTurn = playerOne;
         }
 
@@ -69,56 +61,71 @@ namespace Chess
                 WhosTurn = playerTwo;
             else
                 WhosTurn = playerOne;
+
+            // Clear any enPassant
+            Cell passedCell = Cells.Find(c => !(c.enPassantPawn is null) && c.enPassantPawn.TeamColor == WhosTurn.TeamColor);
+            if(!(passedCell is null))
+                passedCell.enPassantPawn = null;
+
+            // See if King was Checked
+            GamePiece king = WhosTurn.Pieces.Find(gp => gp is King);
+            if (!IsSafe(king, WhosTurn))
+                WhosTurn.isChecked = true;
+
+            HighlightBoard(); // Clear cell statuses
         }
 
         /// <summary>
         /// Sets status of Cells for possible moves for selected Gamepiece
         /// </summary>
         /// <param name="activeCell">Cell that owns GamePiece thats being moved</param>
-        public List<CanMove> PossibleMoves(Cell focusCell)
+        public List<ChessMove> PossibleMoves(GamePiece piece)
         {
-            // Clear all previous cell Statuses
-            Cells.ForEach(c => c.ChangeState(CellState.Default));
+            if (piece is null)
+                return null; // illegal - Empty space
+            if (piece.TeamColor != WhosTurn.TeamColor)
+                return null; // illegal - Other players piece
 
-            List<CanMove> possibleMoves = new List<CanMove>();
+            Cell fromCell = Cells.GetCell(piece.Location);
 
-            // illegal - Empty space
-            if (focusCell.Piece is null)
-                return possibleMoves;
-            // illegal - Other players piece
-            if (focusCell.Piece.TeamColor != WhosTurn.TeamColor)
-                return possibleMoves;
+            List<ChessMove> possibleMoves = new List<ChessMove>(); // Returning List of Possible Moves
+            List<BlindMove> blindMoves = fromCell.Piece.BlindMoves(); // Blind move instructions for Gamepiece
 
-            //Get blind move instructions for specific Gamepiece
-            List<BlindMove> blindMoves = focusCell.Piece.BlindMoves();
+            GamePiece king = WhosTurn.Pieces.Find(gp => gp is King);
 
-            foreach(BlindMove bMove in blindMoves)
-            {
+            foreach (BlindMove bMove in blindMoves)
+            {                
+                Cell focusCell = Cells.NextCell(fromCell, bMove.Direction); // The Starting Point
                 int moveCount = 0;
-                Point testPoint = AddPoints(focusCell.ID, bMove.Direction);
+                Condition moveType = Condition.Neutral;
 
-                // Loop while in Board's bounds AND path is permited
-                while (bMove.Limit != moveCount && InBoardsRange(testPoint))
+                // Increment through Instructions
+                while (!(focusCell is null) && bMove.Limit != moveCount && moveType == Condition.Neutral)
                 {
-                    // Grab Cell associated to Point
-                    Cell targetCell = Cells[PointIndex(testPoint)];
+                    moveType = MovePossibility(fromCell, focusCell, bMove.Condition);
 
-                    MoveType moveType = MovePossibility(focusCell, targetCell, bMove.Condition);
+                    // ADD to List of Possible ChessMoves
+                    if (moveType == Condition.Neutral || moveType == Condition.Attack || moveType == Condition.enPassant)
+                    {
+                        ChessMove move;
+                        if (moveType == Condition.enPassant)
+                        {
+                            GamePiece captured = Cells.Find(c => !(c.enPassantPawn is null)).enPassantPawn;
+                            move = new ChessMove(fromCell, focusCell, fromCell.Piece, captured, moveType, Cells.GetCell(captured.Location));
+                        }
+                        else
+                            move = new ChessMove(fromCell, focusCell, fromCell.Piece, focusCell.Piece, moveType);
 
-                    // Highlight Cell
-                    if (moveType == MoveType.Neutral)
-                        targetCell.ChangeState(CellState.Neutral);
-                    else if (moveType == MoveType.Attack)
-                        targetCell.ChangeState(CellState.Enemy);
+                        // Look in the future
+                        this.Move_GamePiece(move);
+                        bool isKingSafe = IsSafe(king, WhosTurn);
+                        this.UndoMove_GamePiece(move);
 
-                    // only neutral and attack moves permitted
-                    if (moveType != MoveType.Illegal)
-                        possibleMoves.Add(new CanMove(testPoint, moveType));
+                        if (isKingSafe)
+                            possibleMoves.Add(move);
+                    }
 
-                    // No more moves possible if somethings in the way
-                    if (moveType != MoveType.Neutral) break;
-
-                    testPoint = AddPoints(testPoint, bMove.Direction);
+                    focusCell = Cells.NextCell(focusCell, bMove.Direction);
                     moveCount++;
                 }
             }
@@ -129,185 +136,175 @@ namespace Chess
         /// <summary>
         /// Investigates if a move is Legal
         /// </summary>
-        /// <param name="focusCell"></param>
-        /// <param name="targetCell"></param>
+        /// <param name="fromCell"></param>
+        /// <param name="toCell"></param>
         /// <param name="condition"></param>
         /// <returns> illegal = 0, legal neutral = 1, legal attack = 2</returns>
-        private MoveType MovePossibility(Cell focusCell, Cell targetCell, CellState condition, bool kingSafety = true)
+        private Condition MovePossibility(Cell fromCell, Cell toCell, Condition condition)
         {
-            MoveType result = MoveType.Illegal;
+            Condition result = Condition.Default;
 
-            // Special Case - KING
-            if(focusCell.Piece is King && kingSafety)
-            {
-                // Move not permitted if Opponent can attack king next turn
-                if (!IsSafe(targetCell, false)) return result;
-            }
+            if (fromCell == toCell)
+                return Condition.Active; // Already there
 
-            // cell is empty
-            if (targetCell.Piece is null && condition != CellState.Enemy)
+            // cell is Empty
+            if (toCell.Piece is null) // && condition != Condition.Attack)
             {
                 // Legal Neutral
-                if (condition == CellState.Default || condition == CellState.Neutral)
+                if (condition == Condition.Default || condition == Condition.Neutral)
                 {
-                    // Set as possible NEUTRAL
-                    result = MoveType.Neutral;
+                    result = Condition.Neutral;
+                }
+                // Legal Pawn Enpassant Move
+                else if(fromCell.Piece is Pawn && condition == Condition.Attack && !(toCell.enPassantPawn is null))
+                {
+                    result = Condition.enPassant;
                 }
             }
             // cell is Enemy
-            else if (targetCell.Piece != null && targetCell.Piece.TeamColor != WhosTurn.TeamColor && condition != CellState.Neutral)
+            else if (toCell.Piece != null && toCell.Piece.TeamColor != WhosTurn.TeamColor) // && condition != Condition.Neutral)
             {
                 // Legal Attack
-                if (condition == CellState.Default || condition == CellState.Enemy)
+                if (condition == Condition.Default || condition == Condition.Attack)
                 {
-                    // set as possible ATTACK
-                    result = MoveType.Attack;
+                    result = Condition.Attack;
                 }
-            }
-
-            return result;
-        }
-
-        // Only Filters moves blocked by other pieces in the way
-        private List<CanMove> FilterBlindMove(Cell focusCell, BlindMove bMove)
-        {
-            List<CanMove> result = new List<CanMove>();
-
-            int moveCount = 0;
-            Point testPoint = AddPoints(focusCell.ID, bMove.Direction);
-
-            // Loop while in Board's bounds AND path is permited
-            while (bMove.Limit != moveCount && InBoardsRange(testPoint))
-            {
-                // Grab Cell associated to Point
-                Cell targetCell = Cells[PointIndex(testPoint)];
-
-                MoveType moveType = MoveType.Default;
-
-                if (targetCell.Piece.TeamColor == WhosTurn.TeamColor ||
-                   (targetCell.Piece.TeamColor != WhosTurn.TeamColor && bMove.Condition == CellState.Neutral))
-                    moveType = MoveType.Illegal;
-                  
-
-                if (moveType != MoveType.Illegal)
-                    result.Add(new CanMove(testPoint, moveType));
-
-                // Break if the moveType isnt neutral
-                if (!(targetCell.Piece is null)) break;
-
-                testPoint = AddPoints(testPoint, bMove.Direction);
-                moveCount++;
             }
 
             return result;
         }
 
         // Checks if Opponent can attack a cell on next turn
-        private bool IsSafe(Cell cell, bool oppKingSafety = true)
+        private bool IsSafe(GamePiece safePiece, Player whosAsking)
         {
+            Cell safeCell = Cells.GetCell(safePiece.Location);
             // Find Opponent
-            Player Opponent = ReferenceEquals(WhosTurn, playerOne) ? playerTwo : playerOne;
+            Player Opponent = ReferenceEquals(whosAsking, playerOne) ? playerTwo : playerOne;
 
             // Check possible moves for Opponent's Live pieces
-            foreach (GamePiece piece in Opponent.Pieces.FindAll( p => p.isAlive))
+            foreach (GamePiece piece in Opponent.Pieces.FindAll(p => p.isAlive))
             {
-                //Get blind move instructions for specific Gamepiece
-                List<BlindMove> blindMoves = piece.BlindMoves();
+                List<BlindMove> blindMoves = piece.BlindMoves(); // GamePieces Blind Moves
+                Cell fromCell = Cells.GetCell(piece.Location); // GamePiece's Cell
 
                 // Iterate through those moves
                 foreach (BlindMove bMove in blindMoves)
                 {
                     // Only look at Attack permitted moves (No pawn forward moves)
-                    if (bMove.Condition != CellState.Neutral)
+                    if (bMove.Condition != Condition.Neutral)
                     {
-                        Cell focusCell = Cells[PointIndex(piece.Location)];
+                        Cell focusCell = fromCell;
                         int moveCount = 0;
-                        int moveType = 0; // 0 = Neutral move
 
-                        Point testPoint = AddPoints(piece.Location, bMove.Direction);
-
-                        // Loop while in Board's bounds AND path is permited
-                        while (bMove.Limit != moveCount && InBoardsRange(testPoint) && moveType == 0)
+                        // Increment through Instructions
+                        do
                         {
-                            // See if can target cell in question
-                            Cell targetCell = Cells[PointIndex(testPoint)];
+                            // Increment direction
+                            focusCell = Cells.NextCell(focusCell, bMove.Direction);
+                            
+                            // FOUND A MATCH TO CELL
+                            if (ReferenceEquals(safeCell, focusCell))
+                                return false; // Only need one attacker
 
-                            // Find Move Type at the targetCell
-                            moveType = MovePossibility(focusCell, targetCell, bMove.Condition, oppKingSafety);
-
-                            if (ReferenceEquals(targetCell, cell) && moveType != 0)
-                                return false; // Only takes one attack
-
-                            testPoint = AddPoints(testPoint, bMove.Direction);
                             moveCount++;
                         }
+                        while (!(focusCell is null) && bMove.Limit != moveCount && focusCell.Piece is null) ;
                     }
+
                 }
             }
 
             return true;
         }
 
-        /// <summary>
-        /// Tests to see if Point is within Boards scope
-        /// </summary>
-        /// <param name="test"></param>
-        /// <returns>True if its inside the Board</returns>
-        public bool InBoardsRange(Point test)
+        public bool CheckMate()
         {
-            int max = 7;
-            int min = 0;
+            foreach(GamePiece piece in WhosTurn.Pieces.FindAll(gp => gp.isAlive))
+            {
+                if (PossibleMoves(piece).Count > 0)
+                    return false;
+            }
 
-            return  test.X <= max && test.X >= min && 
-                    test.Y <= max && test.Y >= min;
+            return true;
         }
 
-        public Move GamePieceMove(Cell from, Cell to)
+        public void HighlightBoard(List<ChessMove> moves = null)
         {
-            Move newMove = new Move
+            if(moves is null || moves.Count == 0)
+                Cells.ForEach(c => c.ChangeState(Condition.Default));
+            else
             {
-                Piece = from.Piece,
-                From = from.ID,
-                To = to.ID,
-                PieceCaptured = to.Piece
-            };
+                moves[0].From.ChangeState(Condition.Active);
 
-            // Capture Enemy GamePiece
-            if (to.Status == CellState.Enemy)
-                to.Piece.isAlive = false;
-            
+                foreach(ChessMove mve in moves)
+                {
+                    mve.To.ChangeState(mve.MoveType);
+                }
+            }
+        }
+
+        public ChessMove Move_GamePiece(ChessMove move)
+        {
+            if (move.MoveType == Condition.Attack)
+            {
+                // Capture Enemy GamePiece
+                move.PieceCaptured.isAlive = false;
+                move.PieceCaptured.Location = Point.Empty;
+            }
+            else if(move.MoveType == Condition.enPassant)
+            {
+                // EnPassant! Pawn captures pawn via Special move
+
+                // Capture Enemy GamePiece
+                move.PieceCaptured.isAlive = false;
+                move.PieceCaptured.Location = Point.Empty;
+
+                move.To.enPassantPawn = null;
+                move.OtherCell.Piece = null;
+            }
 
             // Move Active GamePiece
-            to.Piece = from.Piece;
-            to.Piece.Location = to.ID;
-            from.Piece = null;
+            move.To.Piece =  move.PieceMoved;
+            move.PieceMoved.Location = move.To.ID;
+            move.From.Piece = null;
 
-            // Clear all previous cell Statuses
-            Cells.ForEach(c => c.ChangeState(CellState.Default));
-            ActiveCell = null;
+            //Check if Pawn and went 2 steps - (Enpassant) Flag if so
+            GamePiece.ChecknFlagEnpassant(Cells, move);
 
-            NextTurn();
-
-            return newMove;
-        }
-
-
-        private Point AddPoints(Point p1, Point p2)
+            return move;
+        }       
+        
+        public ChessMove UndoMove_GamePiece(ChessMove move)
         {
-            p1.X += p2.X;
-            p1.Y += p2.Y;
+            if (move.MoveType == Condition.Attack)
+            {
+                // UnCapture Enemy GamePiece
+                move.PieceCaptured.isAlive = true;
+                move.PieceCaptured.Location = move.To.ID;
+                move.To.Piece = move.PieceCaptured;
+            }
+            else if (move.MoveType == Condition.enPassant)
+            {
+                // Undo EnPassant! Pawn captures pawn via Special move
 
-            return p1;
-        }
+                move.PieceCaptured.isAlive = true;
+                move.PieceCaptured.Location = move.OtherCell.ID;
 
-        /// <summary>
-        /// Allows finding cell of specific point in Board.Cells List
-        /// </summary>
-        /// <param name="cell">X/Y of cell on board</param>
-        /// <returns>Index of the cell in List of Cells for the Board</returns>
-        private int PointIndex(Point cell)
-        {
-            return cell.X + (cell.Y * 8);
+                move.To.enPassantPawn = move.PieceCaptured;
+                move.To.Piece = null;
+                move.OtherCell.Piece = move.PieceCaptured;
+            }
+            else
+                move.To.Piece = null;
+
+            // Move Active GamePiece
+            move.From.Piece = move.PieceMoved;
+            move.PieceMoved.Location = move.From.ID;
+
+            //Check if Pawn and went 2 steps - (Enpassant) UnFlag if so
+            GamePiece.ChecknFlagEnpassant(Cells, move, "undo");
+
+            return move;
         }
     }
 }

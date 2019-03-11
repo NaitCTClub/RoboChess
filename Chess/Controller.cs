@@ -5,12 +5,17 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Drawing;
 using ChessTools;
+using static ChessTools.Library;
 
 namespace Chess
 {
     public class Controller
     {
-        public Board board = new Board();
+        public Board LiveBoard = new Board();
+        public List<ChessMove> Moves = new List<ChessMove>();
+        public int Moves_Index = -1; // Points to the Move currently viewed on LiveBoard 
+
+        public List<ChessMove> possibleMoves = new List<ChessMove>();
 
         //public Player playerOne;
         //public Player playerTwo;
@@ -21,34 +26,102 @@ namespace Chess
         public Controller(MainWindow gui, Board brd)
         {
             GUI = gui;
-            board = brd;
+            LiveBoard = brd;
         }
 
         public void CellClick(Cell focusCell)
         {
-            if (focusCell.Status == CellState.Default)
+
+            if (focusCell.Status == Condition.Active)
+                return; // Clicking the currently selected cell does nothing
+
+            //==============================================================================
+            //                         Select GamePiece
+            //==============================================================================
+            if (focusCell.Status == Condition.Default)
             {
-                //Printing gamepiece for UI temporary effect
-                focusCell.ToString();
+                LiveBoard.HighlightBoard();
+                GamePiece piece = focusCell.Piece;
 
-                // Set cells status for moveable positions
-                board.PossibleMoves(focusCell);
+                // Get & Set cell status for possible moves
+                possibleMoves = LiveBoard.PossibleMoves(piece);
 
-                board.ActiveCell = focusCell;
+                LiveBoard.HighlightBoard(possibleMoves);
 
                 GUI.RenameHeader("Choose target Cell");
             }
-            // Move GamePiece from Active Cell to Focus Cell
+            //==============================================================================
+            //                          Move GamePiece
+            //==============================================================================
             else
             {
                 // MOVE,CAPTURE & TOGGLE TURN
-                Board.Move move = board.GamePieceMove(board.ActiveCell, focusCell);
+                ChessMove move = possibleMoves.Find(moveFind => moveFind.To == focusCell);
 
-                // Notify next player's Turn
-                GUI.RenameHeader($"Go {board.WhosTurn}");
+                LiveBoard.Move_GamePiece(move);
 
-                GUI.lbMoves.Items.Add($"{move.Piece} {move.From} To {move.To}");
+                ArchiveMove(move);
+                GUI.lbMoves.Items.Add($"{move.PieceMoved} {move.From} To {move.To}");
+
+                LiveBoard.NextTurn();
+                if (LiveBoard.WhosTurn.isChecked)
+                {
+                    if (LiveBoard.CheckMate())
+                        EndGame();
+                    else
+                        GUI.RenameHeader($"Check! Go {LiveBoard.WhosTurn}");
+
+                }
+                else
+                    GUI.RenameHeader($"Go {LiveBoard.WhosTurn}");
             }
+        }
+
+        public void ArchiveMove(ChessMove newMove)
+        {
+            if (Moves.Count > Moves_Index + 1)
+                Moves = Moves.GetRange(0, Moves_Index + 1); //Clear future moves
+
+            Moves_Index++;
+            Moves.Add(newMove);
+        }
+
+        public bool UndoMove()
+        {
+            if (Moves_Index == -1)
+                return false; //Cant undo when theres no moves
+
+            ChessMove move = Moves[Moves_Index];
+            LiveBoard.UndoMove_GamePiece(move);
+
+            Moves_Index--;
+
+            LiveBoard.NextTurn();
+
+            return true;
+        }
+
+        public bool RedoMove()
+        {
+            if (Moves.Count == Moves_Index + 1)
+                return false; //Can't redo with no future moves
+
+            Moves_Index++;
+
+            ChessMove move = Moves[Moves_Index];
+            LiveBoard.Move_GamePiece(move);
+
+            LiveBoard.NextTurn();
+
+            return true;
+        }
+
+        public void EndGame()
+        {
+            Player winner = LiveBoard.playerOne.isChecked ? LiveBoard.playerTwo : LiveBoard.playerOne;
+            Player loser = LiveBoard.playerOne.isChecked? LiveBoard.playerOne : LiveBoard.playerTwo;
+
+            GUI.RenameHeader($"CheckMate! {winner} Wins!");
         }
     }
 }
