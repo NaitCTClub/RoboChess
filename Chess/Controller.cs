@@ -14,6 +14,8 @@ namespace Chess
         public Board LiveBoard = new Board();
         public List<ChessMove> Moves = new List<ChessMove>();
         public int Moves_Index = -1; // Points to the Move currently viewed on LiveBoard 
+        private Bot botPlayer;
+        public bool checkMate = false;
 
         public List<ChessMove> possibleMoves = new List<ChessMove>();
 
@@ -27,6 +29,7 @@ namespace Chess
         {
             GUI = gui;
             LiveBoard = brd;
+            botPlayer = new Bot(LiveBoard, LiveBoard.playerTwo, Color.Black);
         }
 
         public void CellClick(Cell focusCell)
@@ -58,23 +61,37 @@ namespace Chess
                 // MOVE,CAPTURE & TOGGLE TURN
                 ChessMove move = possibleMoves.Find(moveFind => moveFind.To == focusCell);
 
-                LiveBoard.Move_GamePiece(move);
+                BoardMove(move);
 
-                ArchiveMove(move);
-                GUI.lbMoves.Items.Add($"{move.PieceMoved} {move.From} To {move.To}");
-
-                LiveBoard.NextTurn();
-                if (LiveBoard.WhosTurn.isChecked)
+                if(LiveBoard.WhosTurn == botPlayer.Me && !checkMate) // Bot Move
                 {
-                    if (LiveBoard.CheckMate())
-                        EndGame();
-                    else
-                        GUI.RenameHeader($"Check! Go {LiveBoard.WhosTurn}");
-
+                    System.Threading.Thread.Sleep(100);
+                    move = botPlayer.MyTurn();
+                    BoardMove(move);
                 }
-                else
-                    GUI.RenameHeader($"Go {LiveBoard.WhosTurn}");
             }
+        }
+
+        private bool BoardMove(ChessMove move)
+        {
+            LiveBoard.Move_GamePiece(move);
+
+            ArchiveMove(move);
+            GUI.lbMoves.Items.Add($"{move.PieceMoved} {move.From} To {move.To}");
+
+            LiveBoard.NextTurn();
+            if (LiveBoard.WhosTurn.isChecked)
+            {
+                if (LiveBoard.CheckMate())
+                    CheckMate();
+                else
+                    GUI.RenameHeader($"Check! Go {LiveBoard.WhosTurn}");
+
+            }
+            else
+                GUI.RenameHeader($"Go {LiveBoard.WhosTurn}");
+
+            return true;
         }
 
         public void ArchiveMove(ChessMove newMove)
@@ -116,10 +133,12 @@ namespace Chess
             return true;
         }
 
-        public void EndGame()
+        public void CheckMate()
         {
             Player winner = LiveBoard.playerOne.isChecked ? LiveBoard.playerTwo : LiveBoard.playerOne;
             Player loser = LiveBoard.playerOne.isChecked? LiveBoard.playerOne : LiveBoard.playerTwo;
+
+            checkMate = true;
 
             GUI.RenameHeader($"CheckMate! {winner} Wins!");
         }
