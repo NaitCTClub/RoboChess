@@ -28,8 +28,8 @@ namespace Chess
         private static readonly SolidColorBrush attackMove = new SolidColorBrush(Colors.Red) { Opacity = 0.8 };
 
         public Point ID { get; protected set; }
-        private static int _Height = 44;
-        private static int _Width = 44;
+        private static int _Height = 88;
+        private static int _Width = 88;
         public GamePiece Piece { get; set; }
         public Button UIButton { get; protected set; }
         public Condition Status { get; set; } = Condition.Default; // Only Used for Human player interaction
@@ -66,7 +66,7 @@ namespace Chess
                 UIButton.Content = null;
         }
 
-        private void CellColor()
+        public void CellColor()
         {
             // Neutral move cell
             if (Status == Condition.Neutral)
@@ -89,22 +89,42 @@ namespace Chess
                     UIButton.Background = darkCell;
         }
 
+        public SolidColorBrush CellColorTemp()
+        {
+            // Neutral move cell
+            if (Status == Condition.Neutral)
+                return neutralMove;
+            // Attackable Cell
+            else if (Status == Condition.Attack)
+                return attackMove;
+            // Active Cell
+            else if (Status == Condition.Active)
+                return activeCell;
+            // Enpassant Cell
+            else if (Status == Condition.enPassant)
+                return attackMove;
+            // Default
+            else
+                // Sequence for creating the Board's pattern in the UI
+                if (((this.ID.Y + this.ID.X) % 2) == 0 || this.ID.Y + this.ID.X == 0)
+                return lightCell;
+            else
+                return darkCell;
+        }
+
         public override string ToString()
         {
-            string result;
-
-            if (Piece is null)
-            {
-                result = "Empty space";
-            }
-            else
-            {
-                // if(cells[x,y].Equals(new King()))
-                result = " The piece is " + Piece + " " +
-                                            Piece.TeamColor + " " +
-                                            Piece.ID;
-            }
-            return result;
+            return $"[{ID.X}, {ID.Y}]";
         }
     }
+
+    //public static class UI_Update
+    //{
+    //    public static SolidColorBrush ColorBack(this Button btn, List<Cell> cells)
+    //    {
+    //        Cell relatedCell = cells.Find(c => ReferenceEquals(c.UIButton, btn));
+
+    //        return relatedCell.CellColorTemp();
+    //    }
+    //}
 }

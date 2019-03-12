@@ -108,6 +108,26 @@ namespace Chess
                 // Set first step as Enpassant - (Link Pawn) remove next turn
             }
         }
+
+        public override string ToString()
+        {
+            string color = this.TeamColor == Color.Black ? "Black" : "White";
+            string piece = "";
+            if (this is King)
+                piece = "King";
+            else if (this is Queen)
+                piece = "Queen";
+            else if (this is Bishop)
+                piece = "Bishop";
+            else if (this is Knight)
+                piece = "Knight";
+            else if (this is Rook)
+                piece = "Rook";
+            else if (this is Pawn)
+                piece = "Pawn";
+
+            return $"{color} {piece}";
+        }
     }
 
 

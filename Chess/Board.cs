@@ -13,23 +13,24 @@ namespace Chess
     {
         public List<Cell> Cells = new List<Cell>();
         public List<ChessMove> Moves = new List<ChessMove>();
+        private Controller controller;
         
-        public Player playerOne;
-        public Player playerTwo;
-        public Player WhosTurn;
+        public Player playerOne { get { return controller.playerOne; } } // Copy Cats
+        public Player playerTwo { get { return controller.playerTwo; } } // Copy Cats
+        public Player WhosTurn { get{ return controller.WhosTurn; } } // Copy Cats
 
         public delegate void DelCell(Cell c);
         public DelCell delButtons = null;
 
-        public Board()
+        public Board(Controller contr)
         {
+            controller = contr;
             // Future - See if you can insert GenerateBoard() in here
         }
 
         public void GenerateBoard()
         {
-            playerOne = new Player(Color.White, "Player One");
-            playerTwo = new Player(Color.Black, "Player Two");
+            if (Cells.Count == 64) return; // Quick fix to prevent Bot from using this function
 
             for (int y = 0; y < 8; y++)
             {
@@ -41,38 +42,15 @@ namespace Chess
                     if (!(cTemp.Piece is null))
                     {
                         if (cTemp.Piece.TeamColor == Color.White)
-                            playerOne.Pieces.Add(cTemp.Piece);
+                            playerOne.MyPieces.Add(cTemp.Piece);
                         else
-                            playerTwo.Pieces.Add(cTemp.Piece);
+                            playerTwo.MyPieces.Add(cTemp.Piece);
                     }
                     // Delegate the Cell to the UI of MainWindow
                     delButtons?.Invoke(cTemp);
                     Cells.Add(cTemp);
                 }
             }
-
-            WhosTurn = playerOne;
-        }
-
-        // Toggles active player after a move
-        public void NextTurn()
-        {
-            if (WhosTurn == playerOne)
-                WhosTurn = playerTwo;
-            else
-                WhosTurn = playerOne;
-
-            // Clear any enPassant
-            Cell passedCell = Cells.Find(c => !(c.enPassantPawn is null) && c.enPassantPawn.TeamColor == WhosTurn.TeamColor);
-            if(!(passedCell is null))
-                passedCell.enPassantPawn = null;
-
-            // See if King was Checked
-            GamePiece king = WhosTurn.Pieces.Find(gp => gp is King);
-            if (!IsSafe(king, WhosTurn))
-                WhosTurn.isChecked = true;
-
-            HighlightBoard(); // Clear cell statuses
         }
 
         /// <summary>
@@ -91,7 +69,7 @@ namespace Chess
             List<ChessMove> possibleMoves = new List<ChessMove>(); // Returning List of Possible Moves
             List<BlindMove> blindMoves = fromCell.Piece.BlindMoves(); // Blind move instructions for Gamepiece
 
-            GamePiece king = WhosTurn.Pieces.Find(gp => gp is King);
+            GamePiece king = WhosTurn.MyPieces.Find(gp => gp is King);
 
             foreach (BlindMove bMove in blindMoves)
             {                
@@ -117,9 +95,9 @@ namespace Chess
                             move = new ChessMove(fromCell, focusCell, fromCell.Piece, focusCell.Piece, moveType);
 
                         // Look in the future
-                        this.Move_GamePiece(move);
+                        this.MovePiece(move);
                         bool isKingSafe = IsSafe(king, WhosTurn);
-                        this.UndoMove_GamePiece(move);
+                        this.UndoMovePiece(move);
 
                         if (isKingSafe)
                             possibleMoves.Add(move);
@@ -174,15 +152,15 @@ namespace Chess
             return result;
         }
 
-        // Checks if Opponent can attack a cell on next turn
-        private bool IsSafe(GamePiece safePiece, Player whosAsking)
+        // Checks if Opponent can attack a GamePiece on next turn
+        public bool IsSafe(GamePiece safePiece, Player whosAsking)
         {
             Cell safeCell = Cells.GetCell(safePiece.Location);
             // Find Opponent
             Player Opponent = ReferenceEquals(whosAsking, playerOne) ? playerTwo : playerOne;
 
             // Check possible moves for Opponent's Live pieces
-            foreach (GamePiece piece in Opponent.Pieces.FindAll(p => p.isAlive))
+            foreach (GamePiece piece in Opponent.MyPieces.FindAll(p => p.isAlive))
             {
                 List<BlindMove> blindMoves = piece.BlindMoves(); // GamePieces Blind Moves
                 Cell fromCell = Cells.GetCell(piece.Location); // GamePiece's Cell
@@ -219,7 +197,7 @@ namespace Chess
 
         public bool CheckMate()
         {
-            foreach(GamePiece piece in WhosTurn.Pieces.FindAll(gp => gp.isAlive))
+            foreach(GamePiece piece in WhosTurn.MyPieces.FindAll(gp => gp.isAlive))
             {
                 if (PossibleMoves(piece).Count > 0)
                     return false;
@@ -243,7 +221,7 @@ namespace Chess
             }
         }
 
-        public ChessMove Move_GamePiece(ChessMove move)
+        public ChessMove MovePiece(ChessMove move)
         {
             if (move.MoveType == Condition.Attack)
             {
@@ -274,7 +252,7 @@ namespace Chess
             return move;
         }       
         
-        public ChessMove UndoMove_GamePiece(ChessMove move)
+        public ChessMove UndoMovePiece(ChessMove move)
         {
             if (move.MoveType == Condition.Attack)
             {
@@ -305,6 +283,16 @@ namespace Chess
             GamePiece.ChecknFlagEnpassant(Cells, move, "undo");
 
             return move;
+        }
+
+        // Clear any enPassant - the option to attack expires after one turn
+        public void ClearEnpassant()
+        {
+            // find if any
+            Cell passedCell = Cells.Find(c => !(c.enPassantPawn is null) && c.enPassantPawn.TeamColor == WhosTurn.TeamColor);
+
+            if (!(passedCell is null))
+                passedCell.enPassantPawn = null;
         }
     }
 }

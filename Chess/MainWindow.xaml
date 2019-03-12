@@ -5,19 +5,21 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Chess" 
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="MainWindow" Height="900" Width="1600">
     <Grid Name="MainGrid">
         <Image HorizontalAlignment="Center" Cursor="None" Source="Resources/ChessBoard.PNG"/>
         <DockPanel>
-            <StackPanel  DockPanel.Dock="Left" Width="222">
-                <ListBox Name="lbMoves" Width="180" Height="400" HorizontalAlignment="Left" FontSize="10"/>
+            <StackPanel  DockPanel.Dock="Left" Width="444">
+                <ListBox Name="lbMoves" Width="360" Height="864" HorizontalAlignment="Left" FontSize="10"/>
             </StackPanel>
-            <StackPanel  Name="UI_DockRight" DockPanel.Dock="Right" Width="215">
+            <StackPanel Name="UI_DockRight" DockPanel.Dock="Right" Width="430">
                 <Button Name ="UI_btnUndo" Height="20" Width="100" Click="UI_btnUndo_Click">Undo</Button>
                 <Button Name="UI_btnRedo" Height="20" Width="100" Click="UI_btnRedo_Click">Redo</Button>
+                <Button Name="Testy" Height="20" Width="100" Click="Testy_Click" Content="test" Margin="57.5,0"/>
             </StackPanel>
-            <Label Name ="lHeader" DockPanel.Dock="Top" Height="37" Background="AliceBlue" Opacity="0.8" Content="May the best Man/Bot Win!" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"></Label>
-            <UniformGrid DockPanel.Dock="Bottom" Width="200" Height="37" ></UniformGrid>
+            <Label Name ="lHeader" DockPanel.Dock="Top" Height="73" Background="AliceBlue" Opacity="0.8" Content="May the best Man/Bot Win!" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" FontSize="36"></Label>
+            <UniformGrid DockPanel.Dock="Bottom" Width="200" Height="73">
+            </UniformGrid>
             <UniformGrid Loaded="MyMainPanel_Loaded" Name="MyMainPanel" HorizontalAlignment="Center" VerticalAlignment="Center">
 
             </UniformGrid>

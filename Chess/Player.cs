@@ -11,9 +11,10 @@ namespace Chess
     public class Player
     {
         public Color TeamColor { get; protected set; } //The color of the gamie piece.
-        public string Name { get; protected set; }  //Identifier for the piece
-        public List<GamePiece> Pieces { get; set; } = new List<GamePiece>();
-        public bool isChecked = false;
+        public string Name { get; protected set; }  // Possible For name change
+        public List<GamePiece> MyPieces { get; private set; } = new List<GamePiece>();
+        public bool isChecked { get; private set; } = false;
+        public bool isBot { get; set; } = false;
 
         public Player(Color color, string name)
         {
@@ -23,14 +24,20 @@ namespace Chess
 
         public override string ToString()
         {
-            string player;
-
             if (TeamColor == Color.White)
-                player = "Player One";
+                return "Player One";
             else
-                player = "Player Two";
+                return "Player Two";
+        }
 
-            return player;
+        public bool AmIChecked(Board board)
+        {
+            if (!board.IsSafe(MyPieces.Find(gp => gp is King), this))
+                isChecked = true;
+            else
+                isChecked = false;
+
+            return isChecked;
         }
     }
 }

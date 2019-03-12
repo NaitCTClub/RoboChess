@@ -11,30 +11,42 @@ namespace Chess
 {
     public class Controller
     {
-        public Board LiveBoard = new Board();
-        public List<ChessMove> Moves = new List<ChessMove>();
-        public int Moves_Index = -1; // Points to the Move currently viewed on LiveBoard 
-        private Bot botPlayer;
+        public Board LiveBoard { get; private set; }
+        public Player playerOne { get; private set; }
+        public Player playerTwo { get; private set; }
+        public Player WhosTurn { get; private set; }
+        public Bot BotBrain1 { get; private set; }
+        public Bot BotBrain2 { get; private set; }
+
+        public List<ChessMove> MoveArchive { get; private set; } = new List<ChessMove>();
+        private int Moves_Index = -1; // Points to the Move currently viewed on LiveBoard 
+        public List<ChessMove> tempPossMoves;
         public bool checkMate = false;
 
-        public List<ChessMove> possibleMoves = new List<ChessMove>();
-
-        //public Player playerOne;
-        //public Player playerTwo;
-        //public Player WhosTurn;
 
         public MainWindow GUI;
 
-        public Controller(MainWindow gui, Board brd)
+        public Controller(MainWindow gui)
         {
+            playerOne = new Player(Color.White, "Player One");
+            playerTwo = new Player(Color.Black, "Player Two");
+            WhosTurn = playerOne;
+
             GUI = gui;
-            LiveBoard = brd;
-            botPlayer = new Bot(LiveBoard, LiveBoard.playerTwo);
+            LiveBoard = new Board(this);
+            BotBrain2 = new Bot(LiveBoard, playerTwo);
+            BotBrain1 = new Bot(LiveBoard, playerOne); // Initializing this automatically changes to bot vs bot interaction
         }
 
+        /////////////////////////////////////////////////////////////////////////////////////
+        //
+        //                  Human Player Interaction
+        //
+        /////////////////////////////////////////////////////////////////////////////////////
         public void BoardClick(Cell focusCell)
         {
-
+            if (checkMate)
+                return;
             if (focusCell.Status == Condition.Active)
                 return; // Clicking the currently selected cell does nothing
 
@@ -47,9 +59,9 @@ namespace Chess
                 GamePiece piece = focusCell.Piece;
 
                 // Get & Set cell status for possible moves
-                possibleMoves = LiveBoard.PossibleMoves(piece);
+                tempPossMoves = LiveBoard.PossibleMoves(piece);
 
-                LiveBoard.HighlightBoard(possibleMoves);
+                LiveBoard.HighlightBoard(tempPossMoves);
 
                 GUI.RenameHeader("Choose target Cell");
             }
@@ -59,37 +71,27 @@ namespace Chess
             else
             {
                 // MOVE,CAPTURE & TOGGLE TURN
-                ChessMove move = possibleMoves.Find(moveFind => moveFind.To == focusCell);
+                ChessMove move = tempPossMoves.Find(moveFind => moveFind.To == focusCell);
 
                 BoardMove(move);
 
-                BotMove(); // 
+                BotMove(BotBrain2);
             }
         }
 
-        private bool BotMove()
+        /////////////////////////////////////////////////////////////////////////////////////
+        //
+        //                  Bot Player Interaction
+        //
+        /////////////////////////////////////////////////////////////////////////////////////
+        private bool BotMove(Bot bot)
         {
-            if (LiveBoard.WhosTurn == botPlayer.Me && !checkMate) // Bot Move
+            if (LiveBoard.WhosTurn == bot.Me && !checkMate)
             {
                 System.Threading.Thread.Sleep(100);
-                ChessMove move = botPlayer.MyTurn();
-                {
-                    //move.To.ChangeState(move.MoveType);
-                    //System.Threading.Thread.Sleep(200);
-                    //move.To.ChangeState(Condition.Default);
-                    //System.Threading.Thread.Sleep(200);
-                    //move.To.ChangeState(move.MoveType);
-                    //System.Threading.Thread.Sleep(200);
-                    //move.To.ChangeState(Condition.Default);
+                ChessMove move = bot.MyTurn(); // Request Move from Bot
 
-                    //move.From.ChangeState(move.MoveType);
-                    //System.Threading.Thread.Sleep(200);
-                    //move.From.ChangeState(Condition.Default);
-                    //System.Threading.Thread.Sleep(200);
-                    //move.From.ChangeState(move.MoveType);
-                    //System.Threading.Thread.Sleep(200);
-                    //move.From.ChangeState(Condition.Default);
-                }
+                GUI.AnimateMove(move); // Slow down what happened
                 BoardMove(move);
 
                 return true;
@@ -98,28 +100,122 @@ namespace Chess
             return false;
         }
 
+        private void BotsBattle()
+        {
+            Bot botWhosTurn = BotBrain1;
+
+            while(!checkMate)
+            {
+                BotMove(botWhosTurn);
+
+                if (botWhosTurn == BotBrain1)
+                    botWhosTurn = BotBrain2;
+                else
+                    botWhosTurn = BotBrain1;
+            }
+        }
+
+        /////////////////////////////////////////////////////////////////////////////////////
+        //
+        //                 Tools & Helper Functions
+        //
+        /////////////////////////////////////////////////////////////////////////////////////
         private bool BoardMove(ChessMove move)
         {
-            LiveBoard.Move_GamePiece(move);
-
+            LiveBoard.MovePiece(move);
             ArchiveMove(move);
-            GUI.lbMoves.Items.Add($"{move.PieceMoved} {move.From} To {move.To}");
 
-            LiveBoard.NextTurn();
-            if (LiveBoard.WhosTurn.isChecked)
+            if(move.PieceCaptured is null)
+                GUI.lbMoves.Items.Add($"{move.PieceMoved} {move.From} To {move.To}");
+            else
+                GUI.lbMoves.Items.Add($"{move.PieceMoved} {move.From} To {move.To} | Captured: {move.PieceCaptured}");
+
+            NextTurn();
+            if (WhosTurn.isChecked)
             {
                 if (LiveBoard.CheckMate())
                     CheckMate();
                 else
-                    GUI.RenameHeader($"Check! Go {LiveBoard.WhosTurn}");
+                    GUI.RenameHeader($"Check! Go {WhosTurn}");
 
             }
             else
-                GUI.RenameHeader($"Go {LiveBoard.WhosTurn}");
+                GUI.RenameHeader($"Go {WhosTurn}");
 
             return true;
         }
 
+        // Toggles active player after a move
+        private void NextTurn()
+        {
+            if (WhosTurn == playerOne)
+                WhosTurn = playerTwo;
+            else
+                WhosTurn = playerOne;
+
+            LiveBoard.ClearEnpassant(); // Enpassant option expires after one turn
+            LiveBoard.HighlightBoard(); // Clear cell statuses
+
+            WhosTurn.AmIChecked(LiveBoard); // Flag player if checked
+        }
+
+        //==============================================================================
+        //                          Un-Move GamePiece
+        //==============================================================================
+        public bool UndoMove()
+        {
+            if (Moves_Index == -1)
+                return false; //Cant undo when theres no moves
+
+            ChessMove move = MoveArchive[Moves_Index];
+            LiveBoard.UndoMovePiece(move);
+
+            Moves_Index--;
+
+            NextTurn();
+
+            if (WhosTurn.isBot)
+                UndoMove();
+
+            return true;
+        }
+
+        //==============================================================================
+        //                         Re-Move GamePiece
+        //==============================================================================
+        public bool RedoMove()
+        {
+            if (MoveArchive.Count == Moves_Index + 1)
+                return false; //Can't redo with no future moves
+
+            Moves_Index++;
+
+            ChessMove move = MoveArchive[Moves_Index];
+            LiveBoard.MovePiece(move);
+
+            NextTurn();
+
+            if (WhosTurn.isBot)
+                RedoMove();
+
+            return true;
+        }
+
+        //==============================================================================
+        //                   Archive Moves for stats & Undo/Redo
+        //==============================================================================
+        public void ArchiveMove(ChessMove newMove)
+        {
+            if (MoveArchive.Count > Moves_Index + 1)
+                MoveArchive = MoveArchive.GetRange(0, Moves_Index + 1); //Clear future moves
+
+            Moves_Index++;
+            MoveArchive.Add(newMove);
+        }
+
+        //==============================================================================
+        //                                  The End
+        //==============================================================================
         public void CheckMate()
         {
             Player winner = LiveBoard.playerOne.isChecked ? LiveBoard.playerTwo : LiveBoard.playerOne;
@@ -130,43 +226,14 @@ namespace Chess
             GUI.RenameHeader($"CheckMate! {winner} Wins!");
         }
 
-        public void ArchiveMove(ChessMove newMove)
+        public void GenerateGame()
         {
-            if (Moves.Count > Moves_Index + 1)
-                Moves = Moves.GetRange(0, Moves_Index + 1); //Clear future moves
+            LiveBoard.GenerateBoard();
 
-            Moves_Index++;
-            Moves.Add(newMove);
-        }
+            if (BotBrain1 is null)
+                return;
 
-        public bool UndoMove()
-        {
-            if (Moves_Index == -1)
-                return false; //Cant undo when theres no moves
-
-            ChessMove move = Moves[Moves_Index];
-            LiveBoard.UndoMove_GamePiece(move);
-
-            Moves_Index--;
-
-            LiveBoard.NextTurn();
-
-            return true;
-        }
-
-        public bool RedoMove()
-        {
-            if (Moves.Count == Moves_Index + 1)
-                return false; //Can't redo with no future moves
-
-            Moves_Index++;
-
-            ChessMove move = Moves[Moves_Index];
-            LiveBoard.Move_GamePiece(move);
-
-            LiveBoard.NextTurn();
-
-            return true;
+            BotsBattle();
         }
     }
 }
