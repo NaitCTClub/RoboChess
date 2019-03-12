@@ -155,7 +155,8 @@ namespace Chess
 
         private void UI_btnBotBattle_Click(object sender, RoutedEventArgs e)
         {
-            controller.BotsBattle();
+            if (!controller.BotsBattle()) // Starts bots vs bot
+                UI_Stats.Items.Add($"Error with Bot: {controller.WhosTurn}");
         }
     }
 

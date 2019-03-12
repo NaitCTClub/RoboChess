@@ -84,38 +84,47 @@ namespace Chess
         //                  Bot Player Interaction
         //
         /////////////////////////////////////////////////////////////////////////////////////
-        private bool BotMove(Bot bot)
-        {
-            if (LiveBoard.WhosTurn == bot.Me && !checkMate)
-            {
-                System.Threading.Thread.Sleep(100);
-                ChessMove move = bot.MyTurn(); // Request Move from Bot
 
-                GUI.AnimateMove(move); // Slow down what happened
-                BoardMove(move);
-
-                return true;
-            }
-
-            return false;
-        }
-
-        public void BotsBattle()
+        public bool BotsBattle()
         {
             if (BotBrain1 is null)
-                return;
+                return false;
 
             Bot botWhosTurn = BotBrain1;
 
             while(!checkMate)
             {
-                BotMove(botWhosTurn);
+                if (!BotMove(botWhosTurn))
+                {
+                    return false;
+                }
 
                 if (botWhosTurn == BotBrain1)
                     botWhosTurn = BotBrain2;
                 else
                     botWhosTurn = BotBrain1;
             }
+
+            return true;
+        }
+
+        private bool BotMove(Bot bot)
+        {
+            if (LiveBoard.WhosTurn == bot.Me && !checkMate)
+            {
+                //System.Threading.Thread.Sleep(100);
+                ChessMove move = bot.MyTurn(); // Request Move from Bot
+
+                if (move.From is null)
+                    return false; // Error with Bot
+
+                //GUI.AnimateMove(move); // Slow down what happened
+                BoardMove(move);
+
+                return true;
+            }
+
+            return false;
         }
 
         /////////////////////////////////////////////////////////////////////////////////////
@@ -136,7 +145,7 @@ namespace Chess
             NextTurn();
             if (WhosTurn.isChecked)
             {
-                if (LiveBoard.CheckMate())
+                if (LiveBoard.isCheckMate())
                     CheckMate();
                 else
                     GUI.RenameHeader($"Check! Go {WhosTurn}");
@@ -226,7 +235,8 @@ namespace Chess
 
             checkMate = true;
 
-            GUI.RenameHeader($"CheckMate! {winner} Wins!");
+            GUI.RenameHeader($"CheckMate! {winner} Wins! {MoveArchive.Count/2} moves");
+            GUI.UI_Stats.Items.Add($"{winner} Wins!");
         }
 
         public void GenerateGame()

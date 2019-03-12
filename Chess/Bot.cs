@@ -84,6 +84,9 @@ namespace Chess
         {
             List<ChessMove> lsOfMoves =  GetAllMoves(); // Example
 
+            if (lsOfMoves.Count == 0) // If you have no Moves then CheckMate!
+                return new ChessMove(null, null, null, null, Condition.Illegal);
+
             if (Me == MainBoard.playerOne) // Giving a disadvantage ironically -- USING FOR DEMO
             {
                 return GetTheBloodiest(lsOfMoves);

@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Chess" 
         mc:Ignorable="d"
-        Title="MainWindow" Height="900" Width="1600">
+        Title="MainWindow" Height="900" Width="1600" ResizeMode="NoResize">
     <Grid Name="MainGrid">
         <Image HorizontalAlignment="Center" Cursor="None" Source="Resources/ChessBoard.PNG"/>
         <DockPanel>
@@ -16,6 +16,7 @@
                 <Button Name="UI_btnBotBattle" Height="20" Width="100" Click="UI_btnBotBattle_Click" Content="Bot Battle" Margin="57.5,0"/>
                 <Button Name ="UI_btnUndo" Height="20" Width="100" Click="UI_btnUndo_Click">Undo</Button>
                 <Button Name="UI_btnRedo" Height="20" Width="100" Click="UI_btnRedo_Click">Redo</Button>
+                <ListBox Name="UI_Stats" Width="360" Height="864" HorizontalAlignment="Right" FontSize="10"/>
             </StackPanel>
             <Label Name ="lHeader" DockPanel.Dock="Top" Height="73" Background="AliceBlue" Opacity="0.8" Content="May the best Man/Bot Win!" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" FontSize="36"></Label>
             <UniformGrid DockPanel.Dock="Bottom" Width="200" Height="73">

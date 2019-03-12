@@ -195,7 +195,8 @@ namespace Chess
             return true;
         }
 
-        public bool CheckMate()
+        // Determines if theres a CHECKMATE
+        public bool isCheckMate()
         {
             foreach(GamePiece piece in WhosTurn.MyPieces.FindAll(gp => gp.isAlive))
             {
