@@ -100,8 +100,11 @@ namespace Chess
             return false;
         }
 
-        private void BotsBattle()
+        public void BotsBattle()
         {
+            if (BotBrain1 is null)
+                return;
+
             Bot botWhosTurn = BotBrain1;
 
             while(!checkMate)
@@ -229,11 +232,6 @@ namespace Chess
         public void GenerateGame()
         {
             LiveBoard.GenerateBoard();
-
-            if (BotBrain1 is null)
-                return;
-
-            BotsBattle();
         }
     }
 }

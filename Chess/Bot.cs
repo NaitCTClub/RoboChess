@@ -22,18 +22,22 @@
 ///                                                                         down -        ( 0,  1 )
 ///                                                                         Left  -       (-1,  0 )
 ///                                                                         Right  -      ( 1,  0 )
-///                                                                         Diagonal -    ( 1,  1 )  
-///     
-//  Helpful Knowledge
-///     MainBoard.MovePiece()     -   Allows you to see the board one step ahead - Careful, it currently changes the MainBoard So....
-///     MainBoard.UndoMovePiece() -   This Must Be used each time after using MovePiece()
-///     MainBoard.PlayerOne
-///     MainBoard.PlayerTwo       -   Used for looking up Enemy moves if you are player One for example
+///                                                                         Diagonal -    ( 1,  1 )
+///                                                                         
 ///     Struct *ChessMove*        -   Instructions and details for a GamePiece move 
 ///                                   [Cell From, Cell To, GamePiece moved, GamePiece captured, Condition MoveType]
-///     Class *GamePiece*         -   Base class for subclasses of all Piece types (King, Queen, etc)
+///     Struct *Condition*        -   Represents the *ChessMove* type
+///                                   [Attack][Neutral][EnPassant]
 ///     Class *Board*             -   Contains the list of Cells, players, whosturn, gamepieces
-///     Class *Cells*             -   Squares on the Board - another way to acquire GamePiece locations, Uses *Point* for coordinates via ID           
+///     Class *Cells*             -   Squares on the Board - another way to acquire GamePiece locations, Uses *Point* for coordinates via ID      
+///     Class *GamePiece*         -   Base class for subclasses of all Piece types (King, Queen, etc)
+///                                                                         
+///     
+//  Helpful Knowledge
+///     MainBoard.PlayerOne       -   Used for looking up Opponent moves if "Me == MainBoard.PlayerOne" for example     
+///     MainBoard.PlayerTwo       -     
+///     MainBoard.MovePiece()     -   Allows you to see the board one step ahead - Careful, it currently changes the MainBoard So....
+///     MainBoard.UndoMovePiece() -   This Must Be used each time after using MovePiece()
 //=======================================================================================================================================
 
 using System;
@@ -49,9 +53,10 @@ namespace Chess
 {
     public class Bot
     {
-        private Board MainBoard; // [DONT ALTER] This contains the reference to the Chess Board (type MainBoard. and see what you get)                                                       
-        public Player Me; // [DONT ALTER] This just helps the Controller to know who you are                                                         
-        private Random _rando = new Random(); // Example, you can scratch if you want 
+        private Board MainBoard; // [DONT ALTER]                                                     
+        public Player Me; // [DONT ALTER]  
+        public Player Opponent;
+        private Random _rando = new Random();
         
         //              Add your global variables here
 
@@ -63,10 +68,10 @@ namespace Chess
             MainBoard = board;  // [DONT ALTER]                                            //   Touch
             Me = player;        // [DONT ALTER]                                            //
             Me.isBot = true;    // [DONT ALTER]                                            //   
-        /////////////////////////////////////////////////////////////////////////////////////        
+            /////////////////////////////////////////////////////////////////////////////////       
 
-        //              Add your custom constructor code here
-
+            //              Add your custom constructor code here
+            Opponent = MainBoard.playerOne == Me ? MainBoard.playerTwo : MainBoard.playerOne;
         }
 
 
@@ -87,24 +92,23 @@ namespace Chess
             {
                 return GetTheSafest(lsOfMoves);
             }
-
-            //return lsOfMoves[_rando.Next(0, lsOfMoves.Count)]; // Example (must return a move)
         }
-        
+
         /////////////////////////////////////////////////////////////////////////////////////
         //
-        //                  Your Bot Brain Goes Here 
+        //                  Your Bot Brain Goes Here                *Example Code provided
         //
         ///////////////////////////////////////////////////////////////////////////////////// 
-        
-            //***Let your strategic brain go nutz here!! All of this below is just **Example*** code
-        
-        public List<ChessMove> GetAllMoves() // Tool for finding ALL ChessMoves Bot's GamePieces can do
+
+        //***Let your strategic brain go nutz here!! All of this below is just **Example*** code
+
+        // Example Function - Returns a List of All legal *ChessMove* for your *GamePiece*'s
+        public List<ChessMove> GetAllMoves()
         {
             List<ChessMove> lsOfMoves = new List<ChessMove>();
 
             // Iterate through all your gamepieces
-            foreach (GamePiece piece in Me.MyPieces.FindAll(p => p.isAlive)) // Usefull, no point in moving a GamePiece
+            foreach (GamePiece piece in Me.MyPieces.FindAll(p => p.isAlive)) // Usefull, no point in moving a DEAD GamePiece
             {
                 List<ChessMove> moves = MainBoard.PossibleMoves(piece);
 
@@ -114,9 +118,10 @@ namespace Chess
             return lsOfMoves;
         }
 
+        // Example Function - Returns a single *ChessMove*
         private ChessMove GetTheSafest(List<ChessMove> lsMoves)
         {
-            List<ChessMove> betterMoves = lsMoves.FindAll(m => !(m.PieceCaptured is null));
+            List<ChessMove> betterMoves = lsMoves.FindAll(m => m.MoveType == Condition.Attack);  // Lambda's for searching Lists are a powerful tool.
             List<ChessMove> bestMoves = new List<ChessMove>();
 
             if( betterMoves.Count > 0)
@@ -152,9 +157,10 @@ namespace Chess
                 return lsMoves[_rando.Next(0, lsMoves.Count)];
         }
 
+        // Example Function - Returns a single *ChessMove*
         private ChessMove GetTheBloodiest(List<ChessMove> lsMoves)
         {
-            List<ChessMove> attackMoves = lsMoves.FindAll(m => !(m.PieceCaptured is null)); // Lambda's for searching Lists Will be a powerful tool, Leverage it.
+            List<ChessMove> attackMoves = lsMoves.FindAll(m => !(m.MoveType == Condition.Attack));
 
             if (attackMoves.Count > 0)
             {

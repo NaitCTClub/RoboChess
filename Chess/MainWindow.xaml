@@ -13,9 +13,9 @@
                 <ListBox Name="lbMoves" Width="360" Height="864" HorizontalAlignment="Left" FontSize="10"/>
             </StackPanel>
             <StackPanel Name="UI_DockRight" DockPanel.Dock="Right" Width="430">
+                <Button Name="UI_btnBotBattle" Height="20" Width="100" Click="UI_btnBotBattle_Click" Content="Bot Battle" Margin="57.5,0"/>
                 <Button Name ="UI_btnUndo" Height="20" Width="100" Click="UI_btnUndo_Click">Undo</Button>
                 <Button Name="UI_btnRedo" Height="20" Width="100" Click="UI_btnRedo_Click">Redo</Button>
-                <Button Name="Testy" Height="20" Width="100" Click="Testy_Click" Content="test" Margin="57.5,0"/>
             </StackPanel>
             <Label Name ="lHeader" DockPanel.Dock="Top" Height="73" Background="AliceBlue" Opacity="0.8" Content="May the best Man/Bot Win!" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" FontSize="36"></Label>
             <UniformGrid DockPanel.Dock="Bottom" Width="200" Height="73">

@@ -153,13 +153,9 @@ namespace Chess
             //}
         }
 
-        private void Testy_Click(object sender, RoutedEventArgs e)
+        private void UI_btnBotBattle_Click(object sender, RoutedEventArgs e)
         {
-            if (Test)
-                Test = false;
-            else
-                Test = true;
-            Testy.Content = Test.ToString();
+            controller.BotsBattle();
         }
     }
 
