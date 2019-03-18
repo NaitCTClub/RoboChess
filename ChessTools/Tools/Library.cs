@@ -8,7 +8,7 @@ namespace ChessTools
     /// <summary>
     ///  States for Cells when Player is viewing possible moves
     /// </summary>
-    public enum Condition { Illegal, Default, Active, Neutral, Attack, enPassant };
+    public enum Condition { Illegal, Default, Active, Neutral, Attack, enPassant, Castling };
     
     /// <summary>
     /// Properties for POTENTIAL moves of a GamePiece
@@ -18,17 +18,19 @@ namespace ChessTools
         public Point Direction;     // x & y direction
         public int Limit;           // # of times it can move in that direction
         public Condition Condition;     // Special conditions that need to be met
+        public object OtherInfo;        // used for Castling to location Rook
         /// <summary>
         /// 
         /// </summary>
         /// <param name="dir">x & y direction</param>
         /// <param name="limit"># of times it can move in that direction (-1 = unlimited)</param>
         /// <param name="condition">Special conditions that need to be met</param>
-        public BlindMove(Point dir, int limit, Condition condition = Condition.Default)
+        public BlindMove(Point dir, int limit, Condition condition = Condition.Default, object otherInfo = null)
         {
             Direction = dir;
             Limit = limit;
             Condition = condition;
+            OtherInfo = otherInfo;
         }
     }
 
@@ -42,16 +44,16 @@ namespace ChessTools
         public GamePiece PieceMoved;
         public GamePiece PieceCaptured;
         public Condition MoveType;
-        public Cell OtherCell;
+        public Object OtherInfo;
 
-        public ChessMove(Cell from, Cell to, GamePiece pieceMoved,  GamePiece pieceCap, Condition moveType, Cell otherCell = null)
+        public ChessMove(Cell from, Cell to, GamePiece pieceMoved,  GamePiece pieceCap, Condition moveType, object otherInfo = null)
         {
             From = from;
             To = to;
             PieceMoved = pieceMoved;
             PieceCaptured = pieceCap;
             MoveType = moveType;
-            OtherCell = otherCell;
+            OtherInfo = otherInfo;
         }
     }
 

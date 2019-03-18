@@ -9,14 +9,48 @@
     <Grid Name="MainGrid">
         <Image HorizontalAlignment="Center" Cursor="None" Source="Resources/ChessBoard.PNG"/>
         <DockPanel>
-            <StackPanel  DockPanel.Dock="Left" Width="444">
+            <StackPanel  DockPanel.Dock="Left" Width="360">
+                <TextBlock Name="_txtMoveCount"></TextBlock>
                 <ListBox Name="lbMoves" Width="360" Height="864" HorizontalAlignment="Left" FontSize="10"/>
             </StackPanel>
-            <StackPanel Name="UI_DockRight" DockPanel.Dock="Right" Width="430">
-                <Button Name="UI_btnBotBattle" Height="20" Width="100" Click="UI_btnBotBattle_Click" Content="Bot Battle" Margin="57.5,0"/>
-                <Button Name ="UI_btnUndo" Height="20" Width="100" Click="UI_btnUndo_Click">Undo</Button>
-                <Button Name="UI_btnRedo" Height="20" Width="100" Click="UI_btnRedo_Click">Redo</Button>
-                <ListBox Name="UI_Stats" Width="360" Height="864" HorizontalAlignment="Right" FontSize="10"/>
+            <StackPanel Name="_DockRight" DockPanel.Dock="Right" Width="360" Margin="0,20">
+                <Button Name="_btnNewGame" Width="200" Click="btnNewGame"> New Game</Button>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,50">
+                    <GroupBox Header="Player One" Name="_playerOne" Width="150">
+                        <StackPanel Name="_playerOneBots">
+                            <RadioButton IsChecked="True">Human</RadioButton>
+                        </StackPanel>
+                    </GroupBox>
+                    <GroupBox Header="Player Two" Name="_playerTwo" Width="150">
+                        <StackPanel Name="_playerTwoBots">
+                            <RadioButton IsChecked="True">Human</RadioButton>
+                        </StackPanel>
+                    </GroupBox>
+                </StackPanel>
+                <StackPanel Name="_GameOnDisplay" Visibility="Visible">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <StackPanel HorizontalAlignment="Center" Margin="0,0,0,20">
+                            <Label HorizontalAlignment="Center">Player One</Label>
+                            <Label Name="_playerOneTeam" HorizontalAlignment="Center"></Label>
+                            <TextBlock Name="_playerOneBrain" HorizontalAlignment="Center"></TextBlock>
+                        </StackPanel>
+                        <StackPanel HorizontalAlignment="Center">
+                            <Label HorizontalAlignment="Center">Player One</Label>
+                            <Label Name="_playerTwoTeam" HorizontalAlignment="Center"></Label>
+                            <TextBlock Name="_playerTwoBrain" HorizontalAlignment="Center"></TextBlock>
+                        </StackPanel>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <Label VerticalAlignment="Center">Bot Move Delay</Label>
+                        <Slider Name="_gameSpeed" Width="100" Minimum="1" Maximum="300" ValueChanged="_gameSpeed_ValueChanged" Value="200" Margin="10,10,10,10" VerticalAlignment="Center"/>
+                        <CheckBox Name="_chkAnimateMoves" Checked="_chkAnimateMoves_Checked" Unchecked="_chkAnimateMoves_Checked" IsChecked="True" Margin="0,0,20,0" VerticalAlignment="Center">Animate Bot Move</CheckBox>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <Button Name="_btnUndo" Height="20" Width="75" Click="UI_btnUndo_Click" Margin="0,0,20,0">Undo-Move</Button>
+                        <Button Name="_btnRedo" Height="20" Width="75" Click="UI_btnRedo_Click" Margin="0,0,20,0">Redo-Move</Button>
+                    </StackPanel>
+                    <ListBox Name="_lbStats" Width="360" MinHeight="500" HorizontalAlignment="Right" FontSize="10"/>
+                </StackPanel>
             </StackPanel>
             <Label Name ="lHeader" DockPanel.Dock="Top" Height="73" Background="AliceBlue" Opacity="0.8" Content="May the best Man/Bot Win!" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" FontSize="36"></Label>
             <UniformGrid DockPanel.Dock="Bottom" Width="200" Height="73">

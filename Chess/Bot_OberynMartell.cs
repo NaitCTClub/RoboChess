@@ -51,27 +51,15 @@ using static ChessTools.Library;
 
 namespace Chess
 {
-    public class Bot
+    public class Bot_OberynMartell : BotController
     {
-        private Board MainBoard; // [DONT ALTER]                                                     
-        public Player Me; // [DONT ALTER]  
-        public Player Opponent;
         private Random _rando = new Random();
-        
+
         //              Add your global variables here
 
-                                                                                              
-        //      Maintain constructors orignal specs - addition is welcomed below this      //
-        /////////////////////////////////////////////////////////////////////////////////////
-        public Bot(Board board, Player player)                                             //   Please
-        {                                                                                  //   Dont
-            MainBoard = board;  // [DONT ALTER]                                            //   Touch
-            Me = player;        // [DONT ALTER]                                            //
-            Me.isBot = true;    // [DONT ALTER]                                            //   
-            /////////////////////////////////////////////////////////////////////////////////       
-
-            //              Add your custom constructor code here
-            Opponent = MainBoard.playerOne == Me ? MainBoard.playerTwo : MainBoard.playerOne;
+        public Bot_OberynMartell() : base() {}
+        public Bot_OberynMartell(Board board, Player player) : base(board, player)
+        {
         }
 
 
@@ -80,21 +68,14 @@ namespace Chess
         //                  Your Bot Mouth Goes Here               *Only change the inside code
         //
         /////////////////////////////////////////////////////////////////////////////////////
-        public ChessMove MyTurn() // Controller calls this to activate Bots turn
+        public override ChessMove MyTurn() // Controller calls this to activate Bots turn
         {
             List<ChessMove> lsOfMoves =  GetAllMoves(); // Example
 
             if (lsOfMoves.Count == 0) // If you have no Moves then CheckMate!
                 return new ChessMove(null, null, null, null, Condition.Illegal);
 
-            if (Me == MainBoard.playerOne) // Giving a disadvantage ironically -- USING FOR DEMO
-            {
-                return GetTheBloodiest(lsOfMoves);
-            }
-            else
-            {
-                return GetTheSafest(lsOfMoves);
-            }
+            return GetTheSafest(lsOfMoves);
         }
 
         /////////////////////////////////////////////////////////////////////////////////////
@@ -133,7 +114,7 @@ namespace Chess
                 {
                     // Look in the future
                     MainBoard.MovePiece(move);
-                    bool isPieceSafe = MainBoard.IsSafe(move.PieceMoved, Me);
+                    bool isPieceSafe = MainBoard.IsSafe(move.PieceMoved.Location, Me);
                     MainBoard.UndoMovePiece(move);
 
                     if (isPieceSafe)
@@ -146,7 +127,7 @@ namespace Chess
                 {
                     // Look in the future
                     MainBoard.MovePiece(move);
-                    bool isPieceSafe = MainBoard.IsSafe(move.PieceMoved, Me);
+                    bool isPieceSafe = MainBoard.IsSafe(move.PieceMoved.Location, Me);
                     MainBoard.UndoMovePiece(move);
 
                     if (isPieceSafe)
@@ -159,21 +140,5 @@ namespace Chess
             else
                 return lsMoves[_rando.Next(0, lsMoves.Count)];
         }
-
-        // Example Function - Returns a single *ChessMove*
-        private ChessMove GetTheBloodiest(List<ChessMove> lsMoves)
-        {
-            List<ChessMove> attackMoves = lsMoves.FindAll(m => !(m.MoveType == Condition.Attack));
-
-            if (attackMoves.Count > 0)
-            {
-                attackMoves.OrderBy(m => m.PieceCaptured);
-                return attackMoves.First();
-            }
-
-            return lsMoves[_rando.Next(0, lsMoves.Count)];
-        }
-
-
     }
 }

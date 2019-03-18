@@ -79,7 +79,10 @@
     </ApplicationDefinition>
     <Compile Include="Bishop.cs" />
     <Compile Include="Board.cs" />
-    <Compile Include="Bot.cs" />
+    <Compile Include="Bot_NoOne.cs" />
+    <Compile Include="Bot_OberynMartell.cs" />
+    <Compile Include="Bot_WhiteWalker.cs" />
+    <Compile Include="BotController.cs" />
     <Compile Include="Cell.cs" />
     <Compile Include="Controller.cs" />
     <Compile Include="Player.cs" />

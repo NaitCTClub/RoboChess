@@ -46,6 +46,7 @@ namespace Chess
                 Height = _Height,
                 Name = $"P{ID.X}{ID.Y}"
                 //,Content = Piece.Img
+               
         };
 
             ChangeState(Condition.Default);
@@ -80,6 +81,8 @@ namespace Chess
             // Enpassant Cell
             else if (Status == Condition.enPassant)
                 UIButton.Background = attackMove;
+            else if (Status == Condition.Castling)
+                UIButton.Background = neutralMove;
             // Default
             else
                 // Sequence for creating the Board's pattern in the UI
@@ -103,6 +106,8 @@ namespace Chess
             // Enpassant Cell
             else if (Status == Condition.enPassant)
                 return attackMove;
+            else if (Status == Condition.Castling)
+                return neutralMove;
             // Default
             else
                 // Sequence for creating the Board's pattern in the UI

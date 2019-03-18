@@ -18,20 +18,18 @@ namespace Chess
         public Color TeamColor { get; protected set; } //The color of the Team 
         public Point ID { get; protected set; }  //Identifier & starting location for the piece
         public Point Location { get; set; } //Current location
+        public int moveCount { get; set; } = 0; // Used to check for legal Castling
         public bool isAlive { get; set; } //Indicates if the piece is still active on the board.
-        protected Point pos;
-        public System.Windows.Controls.Image Img { get; set; }
+        public System.Windows.Controls.Image Img { get; protected set; }
 
         //Constructor for the game piece object. Initialize all parameters.
-        protected GamePiece(Color pieceColor, Point id)
+        protected GamePiece(Color teamColor, Point id)
         {
             //Set the internal members from the passed in values.
-            TeamColor = pieceColor;
-
+            TeamColor = teamColor;
             ID = id; //Default Location
             Location = id; //Current Location
-            //All pieces start out as active.
-            isAlive = true;
+            isAlive = true; //All pieces start out as active.
         }
 
         public abstract List<BlindMove> BlindMoves();
@@ -91,7 +89,7 @@ namespace Chess
             return temp;
         }
 
-        public static void ChecknFlagEnpassant( List<Cell> cells, ChessMove move, string undo = "")
+        public static void ChecknFlagEnpassant( List<Cell> cells, ChessMove move, bool undoMove = false)
         {
             //Check if Pawn that went 2 steps - (Enpassant)
             if (move.PieceMoved is Pawn && Math.Abs(move.From.ID.Y - move.To.ID.Y) == 2)
@@ -100,13 +98,49 @@ namespace Chess
                 Point firstStep = new Point(0, step);
                 Cell passedCell = cells.NextCell(move.From, firstStep);
 
-                if(undo.ToLower() == "undo")
+                if(undoMove)
                     passedCell.enPassantPawn = null;
                 else
                     passedCell.enPassantPawn = move.PieceMoved;
 
                 // Set first step as Enpassant - (Link Pawn) remove next turn
             }
+        }
+
+        // Checks & Implements Pawn2Queen and return modified ChessMove
+        // undoMove = true: Reverts Pawn2Queen
+        public ChessMove Pawn2Queen(ChessMove move, Player owner, bool undoMove = false)
+        {
+            // Check if Pawn is in END ZONE
+            if (!undoMove && this is Pawn && Math.Abs(this.ID.Y - move.To.ID.Y) == 6)
+            {
+                // Create new Queen & Replace Pawn on board
+                Queen newQueen = new Queen(owner.TeamColor, this.ID);
+                newQueen.Location = move.To.ID;
+                move.To.Piece = newQueen;
+
+                // Replace Pawn w/ Queen on Piece Collection
+                owner.MyPieces.Remove(this);
+                owner.MyPieces.Add(newQueen);
+
+                // Add Queen to move's OtherInfo
+                move.OtherInfo = newQueen;
+
+                return move;
+            }
+            else if ( undoMove && move.PieceMoved is Pawn && Math.Abs(this.ID.Y - move.To.ID.Y) == 6)
+            {
+                if (!(move.OtherInfo is GamePiece pieceReplacement))
+                    throw new ArgumentException("Can't find GamePiece in ChessMove's OtherInfo for Pawn2Queen replacement");
+
+                // Remove Queen from Players pieces & Re-Insert Pawn
+                owner.MyPieces.Remove(pieceReplacement);
+                owner.MyPieces.Add(move.PieceMoved);
+
+                return move;
+            }
+
+            return move;
         }
 
         public override string ToString()

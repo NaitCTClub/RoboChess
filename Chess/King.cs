@@ -47,6 +47,8 @@ namespace Chess
             blindMoves.Add(new BlindMove(new Point(-1, -1), 1));
             blindMoves.Add(new BlindMove(new Point(0, -1), 1));
             blindMoves.Add(new BlindMove(new Point(1, -1), 1));
+            blindMoves.Add(new BlindMove(new Point(-2, 0), 1, Condition.Castling, new Point(this.ID.X - 4, this.ID.Y))); // Points to Rook
+            blindMoves.Add(new BlindMove(new Point(2, 0), 1, Condition.Castling, new Point(this.ID.X + 3, this.ID.Y))); // Points to Rook
 
             return blindMoves;
         }

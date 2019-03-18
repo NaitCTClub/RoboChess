@@ -38,42 +38,43 @@ namespace Chess
 
             this.DataContext = this;
 
-    }
-
-        private void _dispTimer_Tick(object sender, EventArgs e)
-        {
-            // Updating the Label which displays the current second
-            //foreach(Cell cellb in controller.LiveBoard.Cells)
-            //{
-            //    cellb.UIButton.Background = cellb.CellColorTemp();
-            //}
-
-            // Forcing the CommandManager to raise the RequerySuggested event
-            //CommandManager.InvalidateRequerySuggested();
         }
 
         private void MyMainPanel_Loaded(object sender, RoutedEventArgs e)
         {
-            // Delegate the Cell to the UI of THIS MainWindow
-            //board.delButtons = LinkButton;
-            //board.GenerateBoard();
-
             // Pass the command wand off to Controller
             controller = new Controller(this);
-            controller.LiveBoard.delButtons = LinkButton;
-            controller.GenerateGame();
-            //controller.LiveBoard.GenerateBoard();
 
-            //_dispTimer = new DispatcherTimer();
-            //_dispTimer.Tick += _dispTimer_Tick;
-            //_dispTimer.Interval = new TimeSpan(0, 0, 1);
-            //_dispTimer.Start();
+            // Looks at all Subclasses of BotController and ADDS them to UI's Player "Brain" RadioButton
+            foreach (Type bot in typeof(BotController).Assembly.GetTypes().Where(type => type.IsSubclassOf(typeof(BotController))))
+            {
+                _playerOneBots.Children.Add(new RadioButton() { Content = $"{bot.Name}" });
+                _playerTwoBots.Children.Add(new RadioButton() { Content = $"{bot.Name}" });
+            }
+
+            //controller.LiveBoard.delButtons = LinkButton;
+            controller.NewGame("Human", "Human");
         }
 
-        public void LinkButton(Cell c)
+
+        /////////////////////////////////////////////////////////////////////////////////////
+        //
+        //                  Human Player Interaction
+        //
+        /////////////////////////////////////////////////////////////////////////////////////
+
+        private void btnNewGame(object sender, RoutedEventArgs e)
         {
-            c.UIButton.Click += Cell_Click;
-            MyMainPanel.Children.Add(c.UIButton);
+            Button button = (Button)sender;
+            
+            // Get the checked radio Button that defines Player's 'Brain'
+            string playerOneBrain = (string)_playerOneBots.Children.OfType<RadioButton>().ToList().Find(rb => (bool)rb.IsChecked).Content;
+            string playerTwoBrain = (string)_playerTwoBots.Children.OfType<RadioButton>().ToList().Find(rb => (bool)rb.IsChecked).Content;
+
+            controller.NewGame(playerOneBrain, playerTwoBrain);
+
+            //if (!controller.BotsBattle()) // Starts bots vs bot
+            //        _lbStats.Items.Add($"Error with Bot: {controller.WhosTurn}");
         }
 
         public void Cell_Click(object sender, RoutedEventArgs e)
@@ -83,20 +84,6 @@ namespace Chess
 
             // Pass to Controller
             controller.BoardClick(focusCell);
-
-            //UI_btnUndo.Dispatcher.Invoke((Action)(() => { }), DispatcherPriority.Render);
-        }
-
-        public void RenameTitle(string message)
-        {
-            Title = message;
-        }
-
-        public void RenameHeader(string message)
-        {
-            //Label tempMess = new Label { Name = "Test", Content = message, VerticalAlignment = VerticalAlignment.Center, HorizontalAlignment = HorizontalAlignment.Center };
-
-            lHeader.Content = message;
         }
 
         private void UI_btnUndo_Click(object sender, RoutedEventArgs e)
@@ -115,58 +102,98 @@ namespace Chess
                 lHeader.Content = "Unable to redo move";
         }
 
-        public void AnimateMove(ChessMove move)
+        private void _gameSpeed_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
-            List<SolidColorBrush> colors = new List<SolidColorBrush>
-            {
-                new SolidColorBrush(Colors.Red) { Opacity = 0.8 },
-                new SolidColorBrush(Colors.Yellow) { Opacity = 0.8 },
-                new SolidColorBrush(Colors.Orange) { Opacity = 0.8 },
-                new SolidColorBrush(Colors.Green) { Opacity = 0.8 },
-                new SolidColorBrush(Colors.Blue) { Opacity = 0.8 },
-                new SolidColorBrush(Colors.Purple) { Opacity = 0.8 }
-            };
+            if (controller is null)
+                return; // Protect against value change on Initial startup
 
-            //move.From.UIButton.Refresh();
-
-            for (int i = 3; i < 6; i++)
-            {
-                move.To.ChangeState(move.MoveType);
-                move.To.UIButton.Dispatcher.Invoke((Action)(() => { }), DispatcherPriority.Render);
-                System.Threading.Thread.Sleep(200);
-                move.To.ChangeState(Condition.Default);
-                move.To.UIButton.Dispatcher.Invoke((Action)(() => { }), DispatcherPriority.Render);
-                //move.To.UIButton.Background = colors[i];
-                System.Threading.Thread.Sleep(100);
-            }
-
-            //move.From.UIButton.Refresh();
-            //for (int i = 0; i < 3; i++)
-            //{
-            //    move.From.ChangeState(move.MoveType);
-            //    move.From.UIButton.Dispatcher.Invoke((Action)(() => { }), DispatcherPriority.Render);
-            //    System.Threading.Thread.Sleep(100);
-            //    //move.From.UIButton.Background = colors[i];
-            //    move.From.ChangeState(Condition.Default);
-            //    move.From.UIButton.Dispatcher.Invoke((Action)(() => { }), DispatcherPriority.Render);
-            //    System.Threading.Thread.Sleep(100);
-            //}
+            controller.speed = (int)_gameSpeed.Value;
         }
 
-        private void UI_btnBotBattle_Click(object sender, RoutedEventArgs e)
+        private void _chkAnimateMoves_Checked(object sender, RoutedEventArgs e)
         {
-            if (!controller.BotsBattle()) // Starts bots vs bot
-                UI_Stats.Items.Add($"Error with Bot: {controller.WhosTurn}");
+            if (controller is null)
+                return; // Protect against value change on Initial startup
+
+            if ((bool)_chkAnimateMoves.IsChecked)
+                controller.animate = true;
+            else
+                controller.animate = false;
+        }
+
+        private void CheckBox_Checked(object sender, RoutedEventArgs e)
+        {
+        }
+
+        /////////////////////////////////////////////////////////////////////////////////////
+        //
+        //                  Thread GUI Update
+        //
+        /////////////////////////////////////////////////////////////////////////////////////
+
+        public void RenameHeader(string message)
+        {
+            //Label tempMess = new Label { Name = "Test", Content = message, VerticalAlignment = VerticalAlignment.Center, HorizontalAlignment = HorizontalAlignment.Center };
+
+            lHeader.Content = message;
+        }
+
+        // Update Move Archive & Messages
+        public void DispatchInvoke_UIUpdate(ChessMove move)
+        {
+            Dispatcher.Invoke(new Action(delegate () { UpdateBoard(move); }));
+        }
+        private void UpdateBoard(ChessMove move)
+        {
+            // Show Move Archive -- **Need to add ability to remove undo moves
+            if (move.PieceCaptured is null)
+                lbMoves.Items.Insert(0, $"{move.PieceMoved} {move.From} To {move.To}");
+            else
+                lbMoves.Items.Insert(0, $"{move.PieceMoved} {move.From} To {move.To} | Captured: {move.PieceCaptured}");
+
+            _txtMoveCount.Text = $"Move Count: {controller.MoveArchive.Count()}"; // **Error since MoveArchive is total moves including current undos
+
+            // Notify whos turn it is
+            if (controller.WhosTurn.isChecked)
+            {
+                if (controller.LiveBoard.isCheckMate())
+                    controller.CheckMate();
+                else
+                    RenameHeader($"Check! Go {controller.WhosTurn}");
+
+            }
+            else
+                RenameHeader($"Go {controller.WhosTurn}");
+
+            controller.LiveBoard.HighlightBoard();
+        }
+
+        // Highlight GamePiece Movement
+        public void DispatchInvoke_UIAnimate(Cell focus, Condition condition)
+        {
+            Dispatcher.Invoke(new Action(delegate () { AnimateMove(focus, condition); }));
+        }
+
+        public void AnimateMove(Cell focus, Condition condition)
+        {
+            focus.ChangeState(condition);
+        }
+
+        public void UpdateGameInfo(string player1Brain, string player2Brain)
+        {
+            _playerOneTeam.Content = new System.Windows.Controls.Image()
+            {
+                Source = new BitmapImage(new Uri("Resources/WhiteKing.png", UriKind.Relative))
+            };
+            _playerOneTeam.Background = new SolidColorBrush(Colors.Gray) { Opacity = 0.8 };
+            _playerOneBrain.Text = player1Brain;
+            _playerTwoTeam.Content = new System.Windows.Controls.Image()
+            {
+                Source = new BitmapImage(new Uri("Resources/BlackKing.png", UriKind.Relative))
+            };
+            _playerTwoTeam.Background = new SolidColorBrush(Colors.LightGray) { Opacity = 0.8 };
+            _playerTwoBrain.Text = player2Brain;
         }
     }
-
-    //public static class ExtensionMethods
-    //{
-    //    private static Action EmptyDelegate = delegate() { };
-
-    //    public static void Refresh(this UIElement uiElement)
-    //    {
-    //        uiElement.Dispatcher.Invoke(DispatcherPriority.Render, EmptyDelegate);
-    //    }
-    //}
 }
+
