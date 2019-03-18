@@ -84,6 +84,7 @@
     <Compile Include="Bot_WhiteWalker.cs" />
     <Compile Include="BotController.cs" />
     <Compile Include="Cell.cs" />
+    <Compile Include="ChessImages.cs" />
     <Compile Include="Controller.cs" />
     <Compile Include="Player.cs" />
     <Compile Include="Queen.cs" />

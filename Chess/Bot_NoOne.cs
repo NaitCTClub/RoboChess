@@ -51,13 +51,13 @@ using static ChessTools.Library;
 
 namespace Chess
 {
-    public class NoOne : BotController 
+    public class ComeCoolDude : BotController 
     {
         private Random _rando = new Random();
         //              Add your global variables here
 
-        public NoOne() : base() {} // [CHANGE NAME]
-        public NoOne(Board board, Player player) : base(board, player) // [CHANGE NAME]
+        public ComeCoolDude() : base() {} // [CHANGE NAME]
+        public ComeCoolDude(Board board, Player player) : base(board, player) // [CHANGE NAME]
         {
         }
 

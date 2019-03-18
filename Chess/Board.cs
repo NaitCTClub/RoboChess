@@ -105,6 +105,8 @@ namespace Chess
                         else if(moveType == Condition.Castling) // *Special Move - Castling, insert Rook into ChessMove
                         {
                             Rook rook = (Rook)Cells.GetCell((Point)bMove.OtherInfo).Piece;
+                            if (rook is null)
+                                break; // Rook is not in original location
                             int xDirection = bMove.Direction.X / 2;
                             Cell rookFrom = Cells.GetCell(rook.Location);
                             Cell rookTo = Cells.GetCell(new Point(fromCell.ID.X + xDirection, fromCell.ID.Y));
@@ -171,7 +173,7 @@ namespace Chess
                 // get Rook
                 int xDirection = fromCell.ID.X > toCell.ID.X ? -1 : 1;
                 Point rookLocation = xDirection == 1 ? new Point(7, fromCell.ID.Y) : new Point(0, fromCell.ID.Y);
-                Rook rook = (Rook)player.MyPieces.Find(gp => gp.ID == rookLocation);
+                Rook rook = (Rook)player.MyPieces.Find(gp => gp.ID == rookLocation && gp.moveCount == 0);
                 
                 if (rook is null)
                     result = Condition.Illegal; // Rook is missing

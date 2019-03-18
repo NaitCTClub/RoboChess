@@ -18,15 +18,9 @@ namespace Chess
         public Queen(Color pieceColor, Point id) : base(pieceColor, id)
         {
             if (TeamColor == Color.Black)
-                Img = new System.Windows.Controls.Image()
-                {
-                    Source = new BitmapImage(new Uri("Resources/blackQueen.png", UriKind.Relative))
-                };
+                Img = ChessImages.Black_Queen;
             else
-                Img = new System.Windows.Controls.Image()
-                {
-                    Source = new BitmapImage(new Uri("Resources/whiteQueen.png", UriKind.Relative))
-                };
+                Img = ChessImages.White_Queen;
         }        
 
         public override List<BlindMove> BlindMoves()
