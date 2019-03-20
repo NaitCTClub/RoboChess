@@ -21,6 +21,11 @@ namespace Chess
          **/
         public Pawn(Color pieceColor, Point id) : base(pieceColor, id)
         {
+            //if (TeamColor == Color.Black)
+            //    Img = ChessImages.Black_Pawn;
+            //else
+            //    Img = ChessImages.White_Pawn;
+
             if (TeamColor == Color.Black)
                 Img = new System.Windows.Controls.Image()
                 {

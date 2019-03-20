@@ -182,9 +182,8 @@ namespace Chess
             {
                 BotMove(WhosTurn.BotBrain);
 
-                Console.WriteLine($"BotMove: {WhosTurn}");
+                //Console.WriteLine($"BotMove: {WhosTurn}");
             }
-
             _BotMatchThread = null;
             return;
         }
@@ -243,13 +242,13 @@ namespace Chess
             move = LiveBoard.MovePiece(move);
             ArchiveMove(move);
             
-            NextTurn();
+            ToggleTurn();
             
             return true;
         }
 
         // Toggles active player after a move
-        private void NextTurn()
+        private void ToggleTurn()
         {
             if (WhosTurn == playerOne)
                 WhosTurn = playerTwo;
@@ -269,16 +268,16 @@ namespace Chess
             if (Moves_Index == -1)
                 return false; //Cant undo when theres no moves
 
+            ToggleTurn();
+
             ChessMove move = MoveArchive[Moves_Index];
             MoveArchive[Moves_Index] = LiveBoard.UndoMovePiece(move);
 
             Moves_Index--;
 
-            NextTurn();
-
             if (WhosTurn.isBot) // Skip to Human Players former move
                 UndoMove();
-
+                       
             GUI.DispatchInvoke_UIUpdate(move);
             return true;
         }
@@ -296,7 +295,7 @@ namespace Chess
             ChessMove move = MoveArchive[Moves_Index];
             MoveArchive[Moves_Index] = LiveBoard.MovePiece(move);
 
-            NextTurn();
+            ToggleTurn();
 
             if (WhosTurn.isBot) // Skip to Human Players latter move
                 RedoMove();

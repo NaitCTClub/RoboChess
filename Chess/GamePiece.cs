@@ -22,6 +22,9 @@ namespace Chess
         public bool isAlive { get; set; } //Indicates if the piece is still active on the board.
         public System.Windows.Controls.Image Img { get; protected set; }
 
+        public delegate GamePiece DelChessMove(Color teamColor, Point loc);
+        public static DelChessMove delChessMove = null;
+
         //Constructor for the game piece object. Initialize all parameters.
         protected GamePiece(Color teamColor, Point id)
         {
@@ -109,15 +112,20 @@ namespace Chess
 
         // Checks & Implements Pawn2Queen and return modified ChessMove
         // undoMove = true: Reverts Pawn2Queen
-        public ChessMove Pawn2Queen(ChessMove move, Player owner, bool undoMove = false)
+        public ChessMove Pawn2Queen(ChessMove move, Player owner, Board board, bool undoMove = false)
         {
             // Check if Pawn is in END ZONE
             if (!undoMove && this is Pawn && Math.Abs(this.ID.Y - move.To.ID.Y) == 6)
             {
                 // Create new Queen & Replace Pawn on board
-                Queen newQueen = new Queen(owner.TeamColor, this.ID);
+                Queen newQueen = (Queen)board.PromotionPieces.Find(gp => gp.TeamColor == owner.TeamColor && gp is Queen);
+                board.PromotionPieces.Remove(newQueen);
+                Console.WriteLine($"{this} Queened");
+
+                newQueen.ID = this.ID;
                 newQueen.Location = move.To.ID;
                 move.To.Piece = newQueen;
+                newQueen.isAlive = true;
 
                 // Replace Pawn w/ Queen on Piece Collection
                 owner.MyPieces.Remove(this);
@@ -134,8 +142,14 @@ namespace Chess
                     throw new ArgumentException("Can't find GamePiece in ChessMove's OtherInfo for Pawn2Queen replacement");
 
                 // Remove Queen from Players pieces & Re-Insert Pawn
+                pieceReplacement.ID = Point.Empty;
+                pieceReplacement.isAlive = false;
                 owner.MyPieces.Remove(pieceReplacement);
                 owner.MyPieces.Add(move.PieceMoved);
+
+                // Add Queen back into PromotionList
+                board.PromotionPieces.Add(pieceReplacement);
+                Console.WriteLine($"{this} Undo Queened");
 
                 return move;
             }

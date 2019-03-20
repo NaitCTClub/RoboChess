@@ -19,6 +19,7 @@ namespace Chess
         public Player playerTwo { get { return controller.playerTwo; } } // Copy Cats
         public Player WhosTurn { get{ return controller.WhosTurn; } } // Copy Cats
 
+        public List<GamePiece> PromotionPieces { get; private set; } = new List<GamePiece>();
         //public delegate void DelCell(Cell c);
         //public DelCell delButtons = null;
 
@@ -31,7 +32,7 @@ namespace Chess
 
         private void GenerateBoard()
         {
-            if (Cells.Count == 64) return; // Quick fix to prevent Bot from using this function
+            if (Cells.Count == 64) return;
 
             for (int y = 0; y < 8; y++)
             {
@@ -54,6 +55,8 @@ namespace Chess
                     Cells.Add(cTemp);
                 }
             }
+
+            PromotionPieces = GeneratePromotionPieces();
         }
 
         public void ClearBoard()
@@ -76,19 +79,17 @@ namespace Chess
                 return null; // illegal - Other players piece
 
             Cell fromCell = Cells.GetCell(piece.Location);
-
             List<ChessMove> possibleMoves = new List<ChessMove>(); // Returning List of Possible Moves
-            List<BlindMove> blindMoves = fromCell.Piece.BlindMoves(); // Blind move instructions for Gamepiece
-
             GamePiece king = WhosTurn.MyPieces.Find(gp => gp is King);
 
-            foreach (BlindMove bMove in blindMoves)
+            //List<BlindMove> blindMoves = fromCell.Piece.BlindMoves(); // Blind move instructions for Gamepiece
+            foreach (BlindMove bMove in fromCell.Piece.BlindMoves()) // Blind move instructions for Gamepiece
             {                
                 Cell focusCell = Cells.NextCell(fromCell, bMove.Direction); // The Starting Point
                 int moveCount = 0;
                 Condition moveType = Condition.Neutral;
 
-                // Increment through Instructions
+                // Increment through Instruction
                 while (!(focusCell is null) && bMove.Limit != moveCount && moveType == Condition.Neutral)
                 {
                     moveType = MovePossibility(fromCell.Piece, fromCell, focusCell, bMove.Condition);
@@ -105,8 +106,6 @@ namespace Chess
                         else if(moveType == Condition.Castling) // *Special Move - Castling, insert Rook into ChessMove
                         {
                             Rook rook = (Rook)Cells.GetCell((Point)bMove.OtherInfo).Piece;
-                            if (rook is null)
-                                break; // Rook is not in original location
                             int xDirection = bMove.Direction.X / 2;
                             Cell rookFrom = Cells.GetCell(rook.Location);
                             Cell rookTo = Cells.GetCell(new Point(fromCell.ID.X + xDirection, fromCell.ID.Y));
@@ -173,7 +172,7 @@ namespace Chess
                 // get Rook
                 int xDirection = fromCell.ID.X > toCell.ID.X ? -1 : 1;
                 Point rookLocation = xDirection == 1 ? new Point(7, fromCell.ID.Y) : new Point(0, fromCell.ID.Y);
-                Rook rook = (Rook)player.MyPieces.Find(gp => gp.ID == rookLocation && gp.moveCount == 0);
+                Rook rook = (Rook)player.MyPieces.Find(gp => gp.ID == rookLocation && gp.moveCount == 0 && gp.isAlive);
                 
                 if (rook is null)
                     result = Condition.Illegal; // Rook is missing
@@ -329,7 +328,7 @@ namespace Chess
             GamePiece.ChecknFlagEnpassant(Cells, move);
 
             // Check if Pawn is at the End Zone! QUEEEN!!
-            move = move.PieceMoved.Pawn2Queen(move, WhosTurn);
+            move = move.PieceMoved.Pawn2Queen(move, WhosTurn, this);
 
             return move;
         }       
@@ -381,7 +380,7 @@ namespace Chess
             GamePiece.ChecknFlagEnpassant(Cells, move, true);
 
             // Check if Pawn was at the End Zone! UNDO QUEEEN!!
-            move = move.PieceMoved.Pawn2Queen(move, WhosTurn, true);
+            move = move.PieceMoved.Pawn2Queen(move, WhosTurn, this, true);
 
             return move;
         }
@@ -394,6 +393,32 @@ namespace Chess
 
             if (!(passedCell is null))
                 passedCell.enPassantPawn = null;
+        }
+
+        // Used for promoting Pawns from Bot Threads to prevent Breaks trying to create a GamePiece in off thread
+        private List<GamePiece> GeneratePromotionPieces()
+        {
+            List<GamePiece> white_Blacks = new List<GamePiece>();
+            
+            for(int i = 0; i < 8; i++)
+                white_Blacks.Add(new Queen(Color.White, Point.Empty));
+            for (int i = 0; i < 8; i++)
+                white_Blacks.Add(new Knight(Color.White, Point.Empty));
+            for (int i = 0; i < 8; i++)
+                white_Blacks.Add(new Bishop(Color.White, Point.Empty));
+            for (int i = 0; i < 8; i++)
+                white_Blacks.Add(new Rook(Color.White, Point.Empty));
+
+            for (int i = 0; i < 8; i++)
+                white_Blacks.Add(new Queen(Color.Black, Point.Empty));
+            for (int i = 0; i < 8; i++)
+                white_Blacks.Add(new Knight(Color.Black, Point.Empty));
+            for (int i = 0; i < 8; i++)
+                white_Blacks.Add(new Bishop(Color.Black, Point.Empty));
+            for (int i = 0; i < 8; i++)
+                white_Blacks.Add(new Rook(Color.Black, Point.Empty));
+
+            return white_Blacks;
         }
     }
 }

@@ -54,6 +54,7 @@ namespace Chess
     public class Bot_WhiteWalker : BotController
     {
         private Random _rando = new Random();
+        private MoveValue _moveValue = new MoveValue();
 
         //              Add your global variables here
 
@@ -75,14 +76,7 @@ namespace Chess
             if (lsOfMoves.Count == 0) // If you have no Moves then CheckMate!
                 return new ChessMove(null, null, null, null, Condition.Illegal);
 
-            if (Me == MainBoard.playerOne) // Giving a disadvantage ironically -- USING FOR DEMO
-            {
-                return GetTheBloodiest(lsOfMoves);
-            }
-            else
-            {
-                return GetTheSafest(lsOfMoves);
-            }
+            return GetTheBloodiest(lsOfMoves);            
         }
 
         /////////////////////////////////////////////////////////////////////////////////////
@@ -110,52 +104,17 @@ namespace Chess
         }
 
         // Example Function - Returns a single *ChessMove*
-        private ChessMove GetTheSafest(List<ChessMove> lsMoves)
-        {
-            List<ChessMove> betterMoves = lsMoves.FindAll(m => m.MoveType == Condition.Attack);  // Lambda's for searching Lists are a powerful tool.
-            List<ChessMove> bestMoves = new List<ChessMove>();
-
-            if( betterMoves.Count > 0)
-            {
-                foreach (ChessMove move in betterMoves)
-                {
-                    // Look in the future
-                    MainBoard.MovePiece(move);
-                    bool isPieceSafe = MainBoard.IsSafe(move.PieceMoved.Location, Me);
-                    MainBoard.UndoMovePiece(move);
-
-                    if (isPieceSafe)
-                        bestMoves.Add(move);
-                }
-            }
-            if(bestMoves.Count < 0)
-            {
-                foreach (ChessMove move in lsMoves)
-                {
-                    // Look in the future
-                    MainBoard.MovePiece(move);
-                    bool isPieceSafe = MainBoard.IsSafe(move.PieceMoved.Location, Me);
-                    MainBoard.UndoMovePiece(move);
-
-                    if (isPieceSafe)
-                        bestMoves.Add(move);
-                }
-            }
-
-            if (bestMoves.Count > 0)
-                return bestMoves[_rando.Next(0, bestMoves.Count)];
-            else
-                return lsMoves[_rando.Next(0, lsMoves.Count)];
-        }
-
-        // Example Function - Returns a single *ChessMove*
         private ChessMove GetTheBloodiest(List<ChessMove> lsMoves)
         {
-            List<ChessMove> attackMoves = lsMoves.FindAll(m => !(m.MoveType == Condition.Attack));
+            List<ChessMove> attackMoves = lsMoves.FindAll(m => m.MoveType == Condition.Attack);
 
             if (attackMoves.Count > 0)
             {
-                attackMoves.OrderBy(m => m.PieceCaptured);
+                _moveValue._sortType = MoveValue.SortType.Descending;
+                _moveValue._sortBy = MoveValue.SortBy.GamePieceCaptured;
+
+                attackMoves.Sort(_moveValue); // Uses MoveValue Class to sort the list
+
                 return attackMoves.First();
             }
 
@@ -163,5 +122,85 @@ namespace Chess
         }
 
 
+    }
+
+    internal class MoveValue : IComparer<ChessMove>
+    {
+        public enum SortType { Ascending, Descending};
+        public enum SortBy { GamePieceMoved, GamePieceCaptured};
+        public SortType _sortType { get; set; }
+        public SortBy _sortBy { get; set; }
+
+        public MoveValue()
+        {
+            _sortType = SortType.Descending;
+            _sortBy = SortBy.GamePieceCaptured;
+        }
+
+        public int Compare(ChessMove mve1, ChessMove mve2)
+        {
+            int direction = _sortType == SortType.Ascending ? 1 : -1;
+            GamePiece p1;
+            GamePiece p2;
+
+            if (_sortBy == SortBy.GamePieceCaptured)
+            {
+                p1 = mve1.PieceCaptured;
+                p2 = mve2.PieceCaptured;
+            }
+            else
+            {
+                p1 = mve1.PieceMoved;
+                p2 = mve2.PieceMoved;
+            }
+
+
+            if (p1 is null && p2 is null)
+                return 0;
+            if (p1 is null)
+                return -1 * direction;
+            if (p2 is null)
+                return direction;
+
+            if (p1.GetType() == p2.GetType())
+                return 0; // Same GamePiece type (Pawn == Pawn)
+
+            if (p1 is King) // Highest Value
+                return direction;
+            if(p1 is Queen) // Second Highest Value
+            {
+                if (p2 is Bishop || p2 is Knight || p2 is Rook || p2 is Pawn)
+                    return direction;
+                else
+                    return -1 * direction;
+            }
+            if (p1 is Rook) // Third Highest Value
+            {
+                if (p2 is Bishop || p2 is Knight || p2 is Pawn)
+                    return direction;
+                else
+                    return -1 * direction;
+            }
+            if (p1 is Bishop) // Tied 4th with Knight
+            {
+                if (p2 is Pawn)
+                    return direction;
+                if (p2 is Knight)
+                    return 0;
+                else
+                    return -1 * direction;
+            }
+            if (p1 is Knight) // Tied 4th with Bishop
+            {
+                if (p2 is Pawn)
+                    return direction;
+                if (p2 is Bishop)
+                    return 0;
+                else
+                    return -1 * direction;
+            }
+            else
+                return -1 * direction; // Pawn is on the bottom, no point in looking for smaller pieces :( awe
+        }
     }
 }

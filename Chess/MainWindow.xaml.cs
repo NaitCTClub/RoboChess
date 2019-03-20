@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
+using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -40,6 +40,7 @@ namespace Chess
 
         }
 
+
         private void MyMainPanel_Loaded(object sender, RoutedEventArgs e)
         {
             // Pass the command wand off to Controller
@@ -54,6 +55,18 @@ namespace Chess
 
             //controller.LiveBoard.delButtons = LinkButton;
             controller.NewGame("Human", "Human");
+            //GamePiece.delChessMove = Pawn2Queen;
+
+            //PopUp pop = new PopUp();
+            //pop.Owner = this;
+            //pop.ShowDialog();
+
+            if (MessageBoxResult.Yes == MessageBox.Show(this, "New Game?", "Welcome to RoboChess!", MessageBoxButton.YesNo))
+            {
+                MessageBox.Show("Cool!");
+            }
+            else
+                MessageBox.Show("Ok...");
         }
 
 
@@ -174,7 +187,7 @@ namespace Chess
             Dispatcher.Invoke(new Action(delegate () { AnimateMove(focus, condition); }));
         }
 
-        public void AnimateMove(Cell focus, Condition condition)
+        private void AnimateMove(Cell focus, Condition condition)
         {
             focus.ChangeState(condition);
         }
@@ -194,6 +207,16 @@ namespace Chess
             _playerTwoTeam.Background = new SolidColorBrush(Colors.LightGray) { Opacity = 0.8 };
             _playerTwoBrain.Text = player2Brain;
         }
+
+        //public ChessMove DispatchInvoke_Pawn2Queen(ChessMove move)
+        //{
+        //    move = Dispatcher.Invoke(new Action(delegate () { Pawn2Queen(move); }));
+        //}
+
+        //private GamePiece Pawn2Queen(Color teamColor, Point ID)
+        //{
+        //    return new Queen(teamColor, ID);
+        //}
     }
 }
 

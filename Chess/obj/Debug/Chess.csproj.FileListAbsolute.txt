@@ -355,3 +355,5 @@ C:\Users\jklassen31\Desktop\GitHub\RoboChess\Chess\obj\Debug\Chess.csproj.CoreCo
 C:\Users\jklassen31\Desktop\GitHub\RoboChess\Chess\obj\Debug\Chess.csproj.CopyComplete
 C:\Users\jklassen31\Desktop\GitHub\RoboChess\Chess\obj\Debug\Chess.exe
 C:\Users\jklassen31\Desktop\GitHub\RoboChess\Chess\obj\Debug\Chess.pdb
+C:\Users\John\Desktop\GitHub\RoboChess\Chess\obj\Debug\PopUp.g.cs
+C:\Users\John\Desktop\GitHub\RoboChess\Chess\obj\Debug\PopUp.baml
