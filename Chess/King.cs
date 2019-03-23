@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Drawing;
 using System.Windows.Media.Imaging;
 using ChessTools;
+using Image = System.Windows.Controls.Image;
 
 namespace Chess
 {
@@ -18,20 +19,32 @@ namespace Chess
          * @brief Constructor for the Pawn object. Calls the constructor for the base GamePiece
          * class before it does it's own construction.
          **/
-        public King(Color pieceColor, Point id) : base(pieceColor, id)
+        public King(Color pieceColor, Point id) : base(pieceColor, id) // Live
         {
+            Img = GetPieceImage(TeamColor);
+        }
+        public King(GamePiece piece) : base(piece) { } // Virtual
+        public King() { } // Used for Virtual Promotion
+
+        public Image GetPieceImage(Color teamColor)
+        {
+            Image result;
+
             if (TeamColor == Color.Black)
-                Img = new System.Windows.Controls.Image()
+                result = new Image()
                 {
-                    Source = new BitmapImage(new Uri("Resources/blackKing.png", UriKind.Relative))
+                    Source = new BitmapImage(new Uri("Resources/BlackKing.png", UriKind.Relative))
                 };
+            //Img = ChessImages.Black_Queen;
             else
-                Img = new System.Windows.Controls.Image()
+                result = new Image()
                 {
                     Source = new BitmapImage(new Uri("Resources/whiteKing.png", UriKind.Relative))
                 };
+
+            return result;
         }
-        
+
         public override List<BlindMove> BlindMoves()
         {
             List<BlindMove> blindMoves = new List<BlindMove>();

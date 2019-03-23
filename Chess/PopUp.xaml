@@ -5,11 +5,14 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Chess"
         mc:Ignorable="d"
-        Title="PopUp" Height="158.039" Width="315.726" Loaded="Window_Loaded">
+        Title="Pick a Promotion Piece" Height="179.039" Width="327.059" Loaded="Window_Loaded" WindowStyle="None">
     <Grid>
-        <StackPanel>
-            <Button Name="_btnPiece" Height="100"></Button>
+        <StackPanel Orientation="Horizontal">
+            <Button Name="_btnKnight" Height="125" Width="60" Margin="10" Click="_btnKnight_Click"/>
+            <Button Name="_btnBishop" Height="125" Width="60" Margin="10" Click="_btnBishop_Click"/>
+            <Button Name="_btnRook" Height="125" Width="60" Margin="10" Click="_btnRook_Click"/>
+            <Button Name="_btnQueen" Height="125" Width="60" Margin="10" Click="_btnQueen_Click"/>
         </StackPanel>
-        
+
     </Grid>
 </Window>

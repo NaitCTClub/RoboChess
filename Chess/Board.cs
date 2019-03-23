@@ -11,26 +11,59 @@ namespace Chess
 {
     public class Board
     {
+        public Controller controller;
+        public GameResult Result { get; set; } = GameResult.InProgress;
+        public Player PlayerOne { get; private set; }
+        public Player PlayerTwo { get; private set; }
+        public Player WhosTurn { get; private set; }
         public List<Cell> Cells = new List<Cell>();
-        public List<ChessMove> Moves = new List<ChessMove>();
-        private Controller controller;
-        
-        public Player playerOne { get { return controller.playerOne; } } // Copy Cats
-        public Player playerTwo { get { return controller.playerTwo; } } // Copy Cats
-        public Player WhosTurn { get{ return controller.WhosTurn; } } // Copy Cats
-
+        public List<GamePiece> AllPieces { get; private set; } = new List<GamePiece>();
         public List<GamePiece> PromotionPieces { get; private set; } = new List<GamePiece>();
-        //public delegate void DelCell(Cell c);
-        //public DelCell delButtons = null;
+        public List<ChessMove> MoveArchive { get; private set; } = new List<ChessMove>();
+        public int Moves_Index = -1; // Points to the Move currently viewed on LiveBoard 
 
-        public Board(Controller contr)
+        public const int StaleMax = 50;
+        public int StaleMoveCount = 0;
+
+        public bool isVirtual { get; private set; } // Flags instances that are in Bots World
+
+
+        public Board(Controller control) // Live Board
         {
-            controller = contr;
+            controller = control;
 
-            GenerateBoard();
+            PlayerOne = new Player(Color.White, "Player One");
+            PlayerTwo = new Player(Color.Black, "Player Two");
+            WhosTurn = PlayerOne;
+            GenerateCells_GamePieces();
+            AllPieces = PlayerOne.MyPieces.Concat(PlayerTwo.MyPieces).ToList();
         }
 
-        private void GenerateBoard()
+        public Board(Board liveBoard) // Virtual Board
+        {
+            isVirtual = true;
+
+            PlayerOne = new Player(liveBoard.PlayerOne);
+            PlayerTwo = new Player(liveBoard.PlayerTwo);
+            WhosTurn = liveBoard.WhosTurn == liveBoard.PlayerOne? PlayerOne : PlayerTwo;
+
+            foreach (GamePiece gp in liveBoard.AllPieces)
+                AllPieces.Add(GamePiece.VirtualPiece(gp));
+
+            PlayerOne.MyPieces = AllPieces.FindAll(gp => gp.TeamColor == Color.White);
+            PlayerTwo.MyPieces = AllPieces.FindAll(gp => gp.TeamColor == Color.Black);
+
+            foreach (Cell c in liveBoard.Cells)
+            {
+                Cell virCell = new Cell(c);
+                virCell.Piece = AllPieces.Find(gp => gp.Location == virCell.ID && gp.isAlive);
+                if(!(c.enPassantPawn is null))
+                    virCell.enPassantPawn = AllPieces.Find(gp => gp.ID == c.enPassantPawn.ID);
+                Cells.Add(virCell);
+            }
+        }
+
+        private void GenerateCells_GamePieces()
         {
             if (Cells.Count == 64) return;
 
@@ -44,27 +77,44 @@ namespace Chess
                     if (!(cTemp.Piece is null))
                     {
                         if (cTemp.Piece.TeamColor == Color.White)
-                            playerOne.MyPieces.Add(cTemp.Piece);
+                            PlayerOne.MyPieces.Add(cTemp.Piece);
                         else
-                            playerTwo.MyPieces.Add(cTemp.Piece);
+                            PlayerTwo.MyPieces.Add(cTemp.Piece);
                     }
                     // Delegate the Cell to the UI of MainWindow
                     //delButtons?.Invoke(cTemp);
                     cTemp.UIButton.Click += controller.GUI.Cell_Click;
                     controller.GUI.MyMainPanel.Children.Add(cTemp.UIButton);
+
                     Cells.Add(cTemp);
                 }
             }
-
+            
             PromotionPieces = GeneratePromotionPieces();
         }
 
-        public void ClearBoard()
+        public void RemoveCellsFromUI()
         {
+           if (isVirtual)
+                return;
+
            for(int i = 0; i < Cells.Count; i++)
             {
                 controller.GUI.MyMainPanel.Children.Remove(Cells[i].UIButton);
             }
+        }
+
+        // Toggles active player after a move
+        public void ToggleTurn()
+        {
+            WhosTurn.isChecked = false;
+
+            if (WhosTurn == PlayerOne)
+                WhosTurn = PlayerTwo;
+            else
+                WhosTurn = PlayerOne;
+
+            ClearEnpassant(); // Enpassant option expires after one turn
         }
 
         /// <summary>
@@ -75,12 +125,11 @@ namespace Chess
         {
             if (piece is null)
                 return null; // illegal - Empty space
-            if (piece.TeamColor != WhosTurn.TeamColor)
-                return null; // illegal - Other players piece
 
+            Player activePlayer = piece.TeamColor == PlayerOne.TeamColor ? PlayerOne : PlayerTwo;
             Cell fromCell = Cells.GetCell(piece.Location);
             List<ChessMove> possibleMoves = new List<ChessMove>(); // Returning List of Possible Moves
-            GamePiece king = WhosTurn.MyPieces.Find(gp => gp is King);
+            GamePiece king = activePlayer.MyPieces.Find(gp => gp is King);
 
             //List<BlindMove> blindMoves = fromCell.Piece.BlindMoves(); // Blind move instructions for Gamepiece
             foreach (BlindMove bMove in fromCell.Piece.BlindMoves()) // Blind move instructions for Gamepiece
@@ -118,9 +167,9 @@ namespace Chess
                             move = new ChessMove(fromCell, focusCell, fromCell.Piece, focusCell.Piece, moveType);
 
                         //Look in the future
-                        move = MovePiece(move);
-                        bool isKingSafe = IsSafe(king.Location, WhosTurn);
-                        move = UndoMovePiece(move);
+                        move = MovePiece(move, true);
+                        bool isKingSafe = IsSafe(king.Location, activePlayer);
+                        move = UndoMovePiece(move, true);
 
                         if (isKingSafe)
                             possibleMoves.Add(move);
@@ -142,8 +191,7 @@ namespace Chess
             if (fromCell == toCell)
                 return Condition.Active; // Already there
 
-            // cell is Empty
-            if (toCell.Piece is null) // && condition != Condition.Attack)
+            if (toCell.Piece is null) // cell is Empty
             {
                 // Legal Neutral
                 if (condition == Condition.Default || condition == Condition.Neutral)
@@ -156,8 +204,7 @@ namespace Chess
                     result = Condition.enPassant;
                 }
             }
-            // cell is Enemy
-            else if (toCell.Piece != null && toCell.Piece.TeamColor != WhosTurn.TeamColor) // && condition != Condition.Neutral)
+            else if (toCell.Piece != null && toCell.Piece.TeamColor != piece.TeamColor) // cell is Enemy
             {
                 // Legal Attack
                 if (condition == Condition.Default || condition == Condition.Attack)
@@ -168,7 +215,7 @@ namespace Chess
 
             if(condition == Condition.Castling)
             {
-                Player player = piece.TeamColor == playerOne.TeamColor ? playerOne : playerTwo;
+                Player player = piece.TeamColor == PlayerOne.TeamColor ? PlayerOne : PlayerTwo;
                 // get Rook
                 int xDirection = fromCell.ID.X > toCell.ID.X ? -1 : 1;
                 Point rookLocation = xDirection == 1 ? new Point(7, fromCell.ID.Y) : new Point(0, fromCell.ID.Y);
@@ -218,7 +265,7 @@ namespace Chess
         {
             Cell safeCell = Cells.GetCell(location);
             // Find Opponent
-            Player Opponent = ReferenceEquals(whosAsking, playerOne) ? playerTwo : playerOne;
+            Player Opponent = ReferenceEquals(whosAsking, PlayerOne) ? PlayerTwo : PlayerOne;
 
             // Check possible moves for Opponent's Live pieces
             foreach (GamePiece piece in Opponent.MyPieces.FindAll(p => p.isAlive))
@@ -256,20 +303,36 @@ namespace Chess
             return true;
         }
 
-        // Determines if theres a CHECKMATE
-        public bool isCheckMate()
+        // Determines if theres a CHECKMATE against 'who'
+        public bool CheckContinue(Player who)
         {
-            foreach(GamePiece piece in WhosTurn.MyPieces.FindAll(gp => gp.isAlive))
+            // ** Future implementation of Draw (50 moves no Capture, 10 repeated moves)
+
+            List<ChessMove> checkMoves = new List<ChessMove>();
+
+            // Look up all possible moves for 'who'
+            foreach (GamePiece piece in who.MyPieces.FindAll(gp => gp.isAlive))
             {
-                if (PossibleMoves(piece).Count > 0)
-                    return false;
+                checkMoves.AddRange(PossibleMoves(piece));
+                if (checkMoves.Count > 0 && StaleMoveCount < StaleMax)
+                    return true; // At least one possible move, No CheckMate, No Draw
             }
 
-            return true;
+            if (StaleMoveCount == StaleMax)
+                Result = GameResult.Draw; // Too many moves with no Pieces captured
+            else if (IsSafe(who.MyPieces.Find(gp => gp is King).Location, who))
+                Result = GameResult.StaleMate; // Not able to move but not Checked
+            else
+                Result = GameResult.CheckMate;
+
+            return false;
         }
 
         public void HighlightBoard(List<ChessMove> moves = null)
         {
+            if (isVirtual)
+                return;
+
             if(moves is null || moves.Count == 0)
                 Cells.ForEach(c => c.ChangeState(Condition.Default));
             else
@@ -283,8 +346,104 @@ namespace Chess
             }
         }
 
-        public ChessMove MovePiece(ChessMove move)
+        /////////////////////////////////////////////////////////////////////////////////////
+        //
+        //                          Move Methods
+        //
+        /////////////////////////////////////////////////////////////////////////////////////
+        
+
+        //==============================================================================
+        //                         Move GamePiece
+        //==============================================================================
+        // Implements Move, Archives Move, Activates ToggleTurn()
+        public bool TakeTurn(ChessMove move)
         {
+            move = MovePiece(move);
+            ArchiveMove(move);
+            ToggleTurn();
+
+            if (!CheckContinue(WhosTurn)) // <======== **Check Promotion, Then CheckMate()
+            {
+                //Dispatcher.Invoke(new Action(delegate () { Fin(); }));
+                return false;
+            }
+
+
+            return true;
+        }
+
+        //==============================================================================
+        //                          Un-Move GamePiece
+        //==============================================================================
+        public bool UndoMove()
+        {
+            if (Moves_Index == -1)
+                return false; //Cant undo when theres no moves
+
+            ToggleTurn();
+
+            ChessMove move = MoveArchive[Moves_Index];
+            MoveArchive[Moves_Index] = UndoMovePiece(move);
+
+            Moves_Index--;
+
+            if (WhosTurn.isBot) // Skip to Human Players former move
+                UndoMove();
+
+            controller.GUI.DispatchInvoke_RemoveMove(move);
+            return true;
+        }
+
+        //==============================================================================
+        //                         Re-Move GamePiece
+        //==============================================================================
+        public bool RedoMove()
+        {
+            if (MoveArchive.Count == Moves_Index + 1)
+                return false; //Can't redo with no future moves
+
+            Moves_Index++;
+
+            ChessMove move = MoveArchive[Moves_Index];
+            MoveArchive[Moves_Index] = MovePiece(move);
+
+            ToggleTurn();
+
+            if (WhosTurn.isBot) // Skip to Human Players latter move
+                RedoMove();
+
+            controller.GUI.DispatchInvoke_AddMove(move);
+            return true;
+        }
+
+        //==============================================================================
+        //                   Archive Moves for stats & Undo/Redo
+        //==============================================================================
+        private void ArchiveMove(ChessMove newMove)
+        {
+            if (MoveArchive.Count > Moves_Index + 1)
+                MoveArchive = MoveArchive.GetRange(0, Moves_Index + 1); //Clear future moves
+
+            Moves_Index++;
+            MoveArchive.Add(newMove);
+        }
+
+        private void ClearArchive()
+        {
+            Moves_Index = -1;
+            MoveArchive.Clear();
+            controller.GUI.lbMoves.Items.Clear();
+        }
+
+        //==============================================================================
+        //                   The Actual Process Of Moving GamePiece
+        //==============================================================================
+        public ChessMove MovePiece(ChessMove move, bool foreShadow = false)
+        {
+            if (!foreShadow)
+                StaleMoveCount = move.MoveType != Condition.Attack ? StaleMoveCount + 1 : 0;
+
             if (move.MoveType == Condition.Attack)
             {
                 // Capture Enemy GamePiece
@@ -328,12 +487,13 @@ namespace Chess
             GamePiece.ChecknFlagEnpassant(Cells, move);
 
             // Check if Pawn is at the End Zone! QUEEEN!!
-            move = move.PieceMoved.Pawn2Queen(move, WhosTurn, this);
+            if(!foreShadow)
+                move = move.PieceMoved.Promotion(move, WhosTurn, this);
 
             return move;
         }       
         
-        public ChessMove UndoMovePiece(ChessMove move)
+        public ChessMove UndoMovePiece(ChessMove move, bool foreShadow = false)
         {
             if (move.MoveType == Condition.Attack)
             {
@@ -380,7 +540,8 @@ namespace Chess
             GamePiece.ChecknFlagEnpassant(Cells, move, true);
 
             // Check if Pawn was at the End Zone! UNDO QUEEEN!!
-            move = move.PieceMoved.Pawn2Queen(move, WhosTurn, this, true);
+            if (!foreShadow)
+                move.PieceMoved.UndoPromotion(move, WhosTurn, this);
 
             return move;
         }

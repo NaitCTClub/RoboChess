@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Drawing;
 using System.Windows.Media.Imaging;
 using ChessTools;
+using Image = System.Windows.Controls.Image;
 
 namespace Chess
 {
@@ -25,17 +26,28 @@ namespace Chess
             //    Img = ChessImages.Black_Pawn;
             //else
             //    Img = ChessImages.White_Pawn;
+            Img = GetPieceImage(TeamColor);
+        }
+        public Pawn(GamePiece piece) : base(piece) { } // Virtual
+        public Pawn() { } // Used for Virtual Promotion
+
+        public Image GetPieceImage(Color teamColor)
+        {
+            Image result;
 
             if (TeamColor == Color.Black)
-                Img = new System.Windows.Controls.Image()
+                result = new Image()
                 {
-                    Source = new BitmapImage(new Uri("Resources/blackPawn.png", UriKind.Relative))
+                    Source = new BitmapImage(new Uri("Resources/BlackPawn.png", UriKind.Relative))
                 };
+            //Img = ChessImages.Black_Queen;
             else
-                Img = new System.Windows.Controls.Image()
+                result = new Image()
                 {
                     Source = new BitmapImage(new Uri("Resources/whitePawn.png", UriKind.Relative))
                 };
+
+            return result;
         }
 
         // Possible Moves, Blind to other Game Pieces

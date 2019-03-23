@@ -8,8 +8,9 @@ namespace ChessTools
     /// <summary>
     ///  States for Cells when Player is viewing possible moves
     /// </summary>
-    public enum Condition { Illegal, Default, Active, Neutral, Attack, enPassant, Castling };
-    
+    public enum Condition { Illegal, Default, Active, Neutral, Attack, enPassant, Castling, Promotion};
+    public enum GameResult { CheckMate, StaleMate, Draw, InProgress, BoardFlipped};
+
     /// <summary>
     /// Properties for POTENTIAL moves of a GamePiece
     /// </summary>
@@ -44,7 +45,7 @@ namespace ChessTools
         public GamePiece PieceMoved;
         public GamePiece PieceCaptured;
         public Condition MoveType;
-        public Object OtherInfo;
+        public object OtherInfo;
 
         public ChessMove(Cell from, Cell to, GamePiece pieceMoved,  GamePiece pieceCap, Condition moveType, object otherInfo = null)
         {
@@ -98,6 +99,7 @@ namespace ChessTools
         {
             int max = 7;
             int min = 0;
+
 
             return test.X <= max && test.X >= min &&
                     test.Y <= max && test.Y >= min;

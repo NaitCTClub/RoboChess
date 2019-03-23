@@ -30,28 +30,32 @@ namespace Chess
         public Point ID { get; protected set; }
         private static int _Height = 88;
         private static int _Width = 88;
-        public GamePiece Piece { get; set; }
+        public bool isVirtual { get; private set; } = false;
+        public GamePiece Piece { get; set; } = null;
         public Button UIButton { get; protected set; }
         public Condition Status { get; set; } = Condition.Default; // Only Used for Human player interaction
         public GamePiece enPassantPawn { get; set; } // Identifies Pawn that used first move to 'pass' this cell (the first of two cells forward)
 
         // Constructor
-        public Cell(int x, int y)
+        public Cell(int x, int y) // Live Cells
         {
             ID = new Point(x, y);
-            Piece = GamePiece.StartingPiece(new Point(x, y));
+            Piece = GamePiece.StartingPiece(new Point(x, y)); // <= **in the future it would be Nice to move to directly at Board Gen
             UIButton = new Button
             {
                 Width = _Width,
                 Height = _Height,
                 Name = $"P{ID.X}{ID.Y}"
-                //,Content = Piece.Img
-               
-        };
+            };
 
             ChangeState(Condition.Default);
         }
 
+        public Cell(Cell c) // Virtual Cells
+        {
+            isVirtual = true;
+            ID = c.ID;
+        }
 
         public void ChangeState(Condition state)
         {
@@ -115,6 +119,14 @@ namespace Chess
                 return lightCell;
             else
                 return darkCell;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (!(obj is Cell arg))
+                return false;
+
+            return this.ID.Equals(arg.ID);
         }
 
         public override string ToString()

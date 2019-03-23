@@ -15,25 +15,32 @@ namespace Chess
      **/
     public abstract class GamePiece
     {
+        public Point ID { get; protected set; }  //Game start location for the piece
         public Color TeamColor { get; protected set; } //The color of the Team 
-        public Point ID { get; protected set; }  //Identifier & starting location for the piece
         public Point Location { get; set; } //Current location
-        public int moveCount { get; set; } = 0; // Used to check for legal Castling
+        public int Value { get; set; } // Used by Bots
         public bool isAlive { get; set; } //Indicates if the piece is still active on the board.
+        public bool isVirtual { get; private set; }
+        public int moveCount { get; set; } = 0; // Used to check for legal Castling
         public System.Windows.Controls.Image Img { get; protected set; }
 
-        public delegate GamePiece DelChessMove(Color teamColor, Point loc);
-        public static DelChessMove delChessMove = null;
-
-        //Constructor for the game piece object. Initialize all parameters.
-        protected GamePiece(Color teamColor, Point id)
+        protected GamePiece (Color teamColor, Point id) // LiveBoard
         {
-            //Set the internal members from the passed in values.
             TeamColor = teamColor;
             ID = id; //Default Location
             Location = id; //Current Location
             isAlive = true; //All pieces start out as active.
         }
+        protected GamePiece (GamePiece piece) //Virtual
+        {
+            ID = piece.ID;
+            TeamColor = piece.TeamColor;
+            Location = piece.Location;
+            isAlive = piece.isAlive;
+            isVirtual = true;
+            moveCount = piece.moveCount;
+        }
+        protected GamePiece() { } // Used for Promotion
 
         public abstract List<BlindMove> BlindMoves();
 
@@ -92,6 +99,22 @@ namespace Chess
             return temp;
         }
 
+        public static GamePiece VirtualPiece(GamePiece piece)
+        {
+            if (piece is King)
+                return new King(piece);
+            if (piece is Queen)
+                return new Queen(piece);
+            if (piece is Rook)
+                return new Rook(piece);
+            if (piece is Bishop)
+                return new Bishop(piece);
+            if (piece is Knight)
+                return new Knight(piece);
+            else
+                return new Pawn(piece);
+        }
+
         public static void ChecknFlagEnpassant( List<Cell> cells, ChessMove move, bool undoMove = false)
         {
             //Check if Pawn that went 2 steps - (Enpassant)
@@ -112,49 +135,85 @@ namespace Chess
 
         // Checks & Implements Pawn2Queen and return modified ChessMove
         // undoMove = true: Reverts Pawn2Queen
-        public ChessMove Pawn2Queen(ChessMove move, Player owner, Board board, bool undoMove = false)
+        public ChessMove Promotion(ChessMove move, Player owner, Board board)
         {
-            // Check if Pawn is in END ZONE
-            if (!undoMove && this is Pawn && Math.Abs(this.ID.Y - move.To.ID.Y) == 6)
-            {
-                // Create new Queen & Replace Pawn on board
-                Queen newQueen = (Queen)board.PromotionPieces.Find(gp => gp.TeamColor == owner.TeamColor && gp is Queen);
-                board.PromotionPieces.Remove(newQueen);
-                Console.WriteLine($"{this} Queened");
-
-                newQueen.ID = this.ID;
-                newQueen.Location = move.To.ID;
-                move.To.Piece = newQueen;
-                newQueen.isAlive = true;
-
-                // Replace Pawn w/ Queen on Piece Collection
-                owner.MyPieces.Remove(this);
-                owner.MyPieces.Add(newQueen);
-
-                // Add Queen to move's OtherInfo
-                move.OtherInfo = newQueen;
-
+            if (!(this is Pawn)) // Only Applies to Pawns
                 return move;
-            }
-            else if ( undoMove && move.PieceMoved is Pawn && Math.Abs(this.ID.Y - move.To.ID.Y) == 6)
-            {
-                if (!(move.OtherInfo is GamePiece pieceReplacement))
-                    throw new ArgumentException("Can't find GamePiece in ChessMove's OtherInfo for Pawn2Queen replacement");
+            if (Math.Abs(this.ID.Y - this.Location.Y) != 6) // Check if Pawn is in END ZONE
+                return move;
 
+
+            // Create new Queen & Replace Pawn on board
+            GamePiece promotionPiece;
+            if (owner.isBot)
+                promotionPiece = owner.BotBrain.Promotion();
+            else
+            {
+                PopUp pop = new PopUp(owner);
+                pop.Owner = board.controller.GUI;
+                var result = pop.ShowDialog();
+
+                promotionPiece = pop.ReturnGamePiece;
+            }
+
+            if (board.isVirtual)
+            {
+                promotionPiece.isVirtual = true;
+                promotionPiece.TeamColor = owner.TeamColor; // to cover promotion constructor
+            }
+            else
+            {
+                promotionPiece = board.PromotionPieces.Find(gp => gp.TeamColor == owner.TeamColor && gp.GetType().Equals(promotionPiece.GetType())); // Prevents thread from crashing
+                board.PromotionPieces.Remove(promotionPiece);
+            }
+
+            Console.WriteLine($"{this} Queened");
+
+            // Promotion
+            promotionPiece.ID = this.ID;
+            promotionPiece.Location = move.To.ID;
+            promotionPiece.isAlive = true;
+            move.To.Piece = promotionPiece;
+
+            // Replace Pawn w/ Queen on Piece Collection
+            owner.MyPieces.Remove(this);
+            owner.MyPieces.Add(promotionPiece);
+
+            board.AllPieces.Remove(this);
+            board.AllPieces.Add(promotionPiece);
+
+            // Add Queen to move's OtherInfo
+            move.OtherInfo = promotionPiece;
+
+            return move;
+        }
+
+        public void UndoPromotion(ChessMove move, Player owner, Board board)
+        {
+            if (!(this is Pawn)) // Only Applies to Pawns move
+                return;
+            if (Math.Abs(this.ID.Y - move.To.ID.Y) != 6) // Check if promotion occured
+                return;            
+            if (!(move.OtherInfo is GamePiece pieceReplacement))
+                throw new ArgumentException("Can't find GamePiece in ChessMove's OtherInfo for Pawn2Queen replacement");
+
+            if (!board.isVirtual) // Not necessary in Virtual
+            {
+                // Add Queen back into PromotionList
+                board.PromotionPieces.Add(pieceReplacement);
                 // Remove Queen from Players pieces & Re-Insert Pawn
                 pieceReplacement.ID = Point.Empty;
                 pieceReplacement.isAlive = false;
-                owner.MyPieces.Remove(pieceReplacement);
-                owner.MyPieces.Add(move.PieceMoved);
-
-                // Add Queen back into PromotionList
-                board.PromotionPieces.Add(pieceReplacement);
-                Console.WriteLine($"{this} Undo Queened");
-
-                return move;
             }
 
-            return move;
+            owner.MyPieces.Remove(pieceReplacement);
+            owner.MyPieces.Add(move.PieceMoved);
+
+            board.AllPieces.Remove(pieceReplacement);
+            board.AllPieces.Add(move.PieceMoved);
+
+            Console.WriteLine($"{this} Undo Queened");
+            
         }
 
         public override string ToString()
@@ -175,6 +234,20 @@ namespace Chess
                 piece = "Pawn";
 
             return $"{color} {piece}";
+        }
+
+        public override int GetHashCode()
+        {
+            return 1;
+        }
+
+        // Matches Gamepieces that have same: ID and Piece Type (ie Rook [0,7])
+        public override bool Equals(object obj) 
+        {
+            if (!(obj is GamePiece arg))
+                return false;
+
+            return ID.Equals(arg.ID) && this.GetType().Equals(arg.GetType());
         }
     }
 

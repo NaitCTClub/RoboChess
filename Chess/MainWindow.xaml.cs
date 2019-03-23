@@ -26,19 +26,17 @@ namespace Chess
     /// </summary>
     public partial class MainWindow : Window
     {
-        // Initiates all of board's children (Cells & GamePieces)
-        //Board board = new Board();
         Controller controller;
-        DispatcherTimer _dispTimer;
-        bool Test = false;
 
         public MainWindow()
         {
             InitializeComponent();
-
-            this.DataContext = this;
-
         }
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+        }
+
 
 
         private void MyMainPanel_Loaded(object sender, RoutedEventArgs e)
@@ -53,20 +51,14 @@ namespace Chess
                 _playerTwoBots.Children.Add(new RadioButton() { Content = $"{bot.Name}" });
             }
 
-            //controller.LiveBoard.delButtons = LinkButton;
             controller.NewGame("Human", "Human");
-            //GamePiece.delChessMove = Pawn2Queen;
+        }
 
-            //PopUp pop = new PopUp();
-            //pop.Owner = this;
-            //pop.ShowDialog();
-
-            if (MessageBoxResult.Yes == MessageBox.Show(this, "New Game?", "Welcome to RoboChess!", MessageBoxButton.YesNo))
-            {
-                MessageBox.Show("Cool!");
-            }
-            else
-                MessageBox.Show("Ok...");
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            controller.gameOn = false;
+            Thread.Sleep(300); // Wait for possible Bots to kill threads
+            controller.Close();
         }
 
 
@@ -102,17 +94,17 @@ namespace Chess
         private void UI_btnUndo_Click(object sender, RoutedEventArgs e)
         {
             if (controller.UndoMove())
-                lHeader.Content = "Undo move";
+                _lbHeader.Text = "Undo move";
             else
-                lHeader.Content = "Unable to Undo move";
+                _lbHeader.Text = "Unable to Undo move";
         }
 
         private void UI_btnRedo_Click(object sender, RoutedEventArgs e)
         {
             if (controller.RedoMove())
-                lHeader.Content = "Redo move";
+                _lbHeader.Text = "Redo move";
             else
-                lHeader.Content = "Unable to redo move";
+                _lbHeader.Text = "Unable to redo move";
         }
 
         private void _gameSpeed_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
@@ -148,7 +140,7 @@ namespace Chess
         {
             //Label tempMess = new Label { Name = "Test", Content = message, VerticalAlignment = VerticalAlignment.Center, HorizontalAlignment = HorizontalAlignment.Center };
 
-            lHeader.Content = message;
+            _lbHeader.Text = message;
         }
 
         // Update Move Archive & Messages
@@ -158,27 +150,19 @@ namespace Chess
         }
         private void UpdateBoard(ChessMove move)
         {
-            // Show Move Archive -- **Need to add ability to remove undo moves
-            if (move.PieceCaptured is null)
-                lbMoves.Items.Insert(0, $"{move.PieceMoved} {move.From} To {move.To}");
-            else
-                lbMoves.Items.Insert(0, $"{move.PieceMoved} {move.From} To {move.To} | Captured: {move.PieceCaptured}");
+            _txtMoveCount.Text = $"Move Count: {controller.LiveBoard.Moves_Index + 1}"; // **Error since MoveArchive is total moves including current undos
 
-            _txtMoveCount.Text = $"Move Count: {controller.MoveArchive.Count()}"; // **Error since MoveArchive is total moves including current undos
+            controller.LiveBoard.HighlightBoard();
+
+            if (controller.LiveBoard.Result != GameResult.InProgress)
+                return;
 
             // Notify whos turn it is
             if (controller.WhosTurn.isChecked)
-            {
-                if (controller.LiveBoard.isCheckMate())
-                    controller.CheckMate();
-                else
-                    RenameHeader($"Check! Go {controller.WhosTurn}");
-
-            }
+                RenameHeader($"Check! Go {controller.WhosTurn}");
             else
                 RenameHeader($"Go {controller.WhosTurn}");
 
-            controller.LiveBoard.HighlightBoard();
         }
 
         // Highlight GamePiece Movement
@@ -208,6 +192,32 @@ namespace Chess
             _playerTwoBrain.Text = player2Brain;
         }
 
+        public void DispatchInvoke_RemoveMove(ChessMove move)
+        {
+            Dispatcher.Invoke(new Action(delegate () { LbMoves_RemoveMove(move); }));
+        }
+
+        public void LbMoves_RemoveMove(ChessMove move)
+        {
+            lbMoves.Items.RemoveAt(0);
+
+            UpdateBoard(move);
+        }
+
+        public void DispatchInvoke_AddMove(ChessMove move)
+        {
+            Dispatcher.Invoke(new Action(delegate () { LbMoves_AddMove(move); }));
+        }
+
+        public void LbMoves_AddMove(ChessMove move)
+        {
+            if (move.PieceCaptured is null)
+                lbMoves.Items.Insert(0, $"{move.PieceMoved} {move.From} To {move.To}");
+            else
+                lbMoves.Items.Insert(0, $"{move.PieceMoved} {move.From} To {move.To} | Captured: {move.PieceCaptured}");
+
+            UpdateBoard(move);
+        }
         //public ChessMove DispatchInvoke_Pawn2Queen(ChessMove move)
         //{
         //    move = Dispatcher.Invoke(new Action(delegate () { Pawn2Queen(move); }));

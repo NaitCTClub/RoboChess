@@ -57,16 +57,13 @@ namespace Chess
         //              Add your global variables here
 
         public ComeCoolDude() : base() {} // [CHANGE NAME]
-        public ComeCoolDude(Board board, Player player) : base(board, player) // [CHANGE NAME]
-        {
-        }
 
         /////////////////////////////////////////////////////////////////////////////////////
         //
         //                  Your Bot Mouth Goes Here               *Only change the inside code
         //
         /////////////////////////////////////////////////////////////////////////////////////
-        public override ChessMove MyTurn() // Controller calls this to activate Bots turn
+        public override ChessMove MyTurn() // Game calls this to activate Bots turn
         {
             List<ChessMove> lsOfMoves =  GetAllMoves(); // Example
 
@@ -74,6 +71,10 @@ namespace Chess
                 return new ChessMove(null, null, null, null, Condition.Illegal);
 
             return GetTheSafest(lsOfMoves);
+        }
+        public override GamePiece Promotion() // Game calls this whenever your pawn can be promoted
+        {
+            return new Queen(); // Queen is da best
         }
 
         /////////////////////////////////////////////////////////////////////////////////////
@@ -92,7 +93,7 @@ namespace Chess
             // Iterate through all your gamepieces
             foreach (GamePiece piece in Me.MyPieces.FindAll(p => p.isAlive)) // Usefull, no point in moving a DEAD GamePiece
             {
-                List<ChessMove> moves = MainBoard.PossibleMoves(piece);
+                List<ChessMove> moves = VirtualBoard.PossibleMoves(piece);
 
                 lsOfMoves.AddRange(moves);
             }
@@ -111,12 +112,12 @@ namespace Chess
                 foreach (ChessMove move in betterMoves)
                 {
                     // Look in the future
-                    MainBoard.MovePiece(move);
-                    bool isPieceSafe = MainBoard.IsSafe(move.PieceMoved.Location, Me);
-                    MainBoard.UndoMovePiece(move);
+                    ChessMove mve = VirtualBoard.MovePiece(move);  // capture possible return of additional information into the move (This MUST be done if pawn)
+                    bool isPieceSafe = VirtualBoard.IsSafe(mve.PieceMoved.Location, Me);
+                    VirtualBoard.UndoMovePiece(mve);
 
                     if (isPieceSafe)
-                        bestMoves.Add(move);
+                        bestMoves.Add(mve);
                 }
             }
             if(bestMoves.Count < 0)
@@ -124,12 +125,12 @@ namespace Chess
                 foreach (ChessMove move in lsMoves)
                 {
                     // Look in the future
-                    MainBoard.MovePiece(move);
-                    bool isPieceSafe = MainBoard.IsSafe(move.PieceMoved.Location, Me);
-                    MainBoard.UndoMovePiece(move);
+                    ChessMove mve = VirtualBoard.MovePiece(move);  // capture possible return of additional information into the move (This MUST be done if pawn)
+                    bool isPieceSafe = VirtualBoard.IsSafe(mve.PieceMoved.Location, Me);
+                    VirtualBoard.UndoMovePiece(mve);
 
                     if (isPieceSafe)
-                        bestMoves.Add(move);
+                        bestMoves.Add(mve);
                 }
             }
 

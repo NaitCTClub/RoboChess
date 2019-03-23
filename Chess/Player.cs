@@ -12,26 +12,44 @@ namespace Chess
     {
         public Color TeamColor { get; protected set; } //The color of the gamie piece.
         public string Name { get; protected set; }  // Possible For name change
-        public List<GamePiece> MyPieces { get; private set; } = new List<GamePiece>();
-        public bool isChecked { get; private set; } = false;
+        public List<GamePiece> MyPieces { get; set; } = new List<GamePiece>();
+        public bool isChecked { get; set; } = false;
         public bool isBot { get; set; } = false;
+        public bool isVirtual { get; private set; } = false; // Flags instances that are in Bots World
         public BotController BotBrain { get; private set; }
 
-        public Player(Color color, string name)
+        public Player(Color color, string name) // Live Player
         {
             TeamColor = color;
             Name = name;            
         }
 
-        public bool BotThePlayer(string botName, Board mainBoard)
+        public Player(Player livePlayer) // Virtual Player
         {
-            if (botName is null || mainBoard is null)
+            isVirtual = true;
+            isBot = true;
+            BotBrain = livePlayer.BotBrain;
+            TeamColor = livePlayer.TeamColor;
+            Name = livePlayer.Name;
+        }
+
+        public bool BotThePlayer(string botName, Board liveBoard)
+        {
+            if (botName is null || liveBoard is null)
                 return false;
-            
-            BotBrain = GetBotBrain(botName, mainBoard);
+
+            BotBrain = BotController.MatchBotBrain(botName);
             isBot = true;
 
             return true;
+        }
+
+        public void UpdateBot(Board liveBoard)
+        {
+            if (!isBot)
+                return;
+
+            BotBrain.UpdateBrain(liveBoard, this);
         }
 
         public override string ToString()
@@ -40,38 +58,6 @@ namespace Chess
                 return "Player One";
             else
                 return "Player Two";
-        }
-
-        public bool AmIChecked(Board board)
-        {
-            if (!board.IsSafe(MyPieces.Find(gp => gp is King).Location, this))
-                isChecked = true;
-            else
-                isChecked = false;
-
-            return isChecked;
-        }
-
-        private BotController GetBotBrain(string botName, Board board)
-        {
-            foreach (Type bot in typeof(BotController).Assembly.GetTypes().Where(type => type.IsSubclassOf(typeof(BotController))))
-            {
-                if (botName.Equals(bot.Name))
-                {
-                    object[] arg = { board, this };
-                    return (BotController)Activator.CreateInstance(bot, arg);
-                }
-            }
-
-            return null; // Whoops couldn't find a matching Brain
-
-
-            // ===== Could be used if getting bots from dll ========
-            //var subclasses =
-            //    from assembly in AppDomain.CurrentDomain.GetAssemblies()
-            //    from type in assembly.GetTypes()
-            //    where type.IsSubclassOf(typeof(BotController))
-            //    select type;
         }
     }
 }

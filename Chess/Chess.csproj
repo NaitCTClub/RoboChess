@@ -79,6 +79,7 @@
     </ApplicationDefinition>
     <Compile Include="Bishop.cs" />
     <Compile Include="Board.cs" />
+    <Compile Include="BotRecord.cs" />
     <Compile Include="Bot_NoOne.cs" />
     <Compile Include="Bot_OberynMartell.cs" />
     <Compile Include="Bot_WhiteWalker.cs" />
@@ -93,6 +94,7 @@
     <Compile Include="Queen.cs" />
     <Compile Include="Knight.cs" />
     <Compile Include="Rook.cs" />
+    <Compile Include="GameStat.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -152,9 +154,6 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\Image1.png" />
-  </ItemGroup>
-  <ItemGroup>
     <Resource Include="Resources\ChessBoard.PNG" />
   </ItemGroup>
   <ItemGroup>
@@ -170,6 +169,9 @@
     <Resource Include="Resources\whitePawn.png" />
     <Resource Include="Resources\whiteQueen.png" />
     <Resource Include="Resources\whiteRook.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\ChessBoardPoints.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

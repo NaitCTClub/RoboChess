@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Drawing;
 using System.Windows.Media.Imaging;
 using ChessTools;
+using Image = System.Windows.Controls.Image;
 
 namespace Chess
 {
@@ -17,19 +18,29 @@ namespace Chess
          **/
         public Queen(Color pieceColor, Point id) : base(pieceColor, id)
         {
+            Img = GetPieceImage(TeamColor);
+        }
+        public Queen(GamePiece piece) : base(piece) { } // Virtual
+        public Queen() { } // Used for Virtual Promotion
+
+        public Image GetPieceImage(Color teamColor)
+        {
+            Image result;
+
             if (TeamColor == Color.Black)
-                Img = new System.Windows.Controls.Image()
+                result = new Image()
                 {
                     Source = new BitmapImage(new Uri("Resources/BlackQueen.png", UriKind.Relative))
                 };
-                //Img = ChessImages.Black_Queen;
+            //Img = ChessImages.Black_Queen;
             else
-                Img = new System.Windows.Controls.Image()
+                result = new Image()
                 {
                     Source = new BitmapImage(new Uri("Resources/whiteQueen.png", UriKind.Relative))
                 };
-                //Img = ChessImages.White_Queen;
-        }        
+
+            return result;
+        }
 
         public override List<BlindMove> BlindMoves()
         {

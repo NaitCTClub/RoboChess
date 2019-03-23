@@ -5,9 +5,9 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Chess" 
         mc:Ignorable="d"
-        Title="MainWindow" Height="900" Width="1600" ResizeMode="NoResize">
+        Title="RoboChess" Height="900" Width="1600" ResizeMode="NoResize" Closing="Window_Closing">
     <Grid Name="MainGrid">
-        <Image HorizontalAlignment="Center" Cursor="None" Source="Resources/ChessBoard.PNG"/>
+        <Image HorizontalAlignment="Center" Cursor="None" Source="Resources/ChessBoardPoints.png"/>
         <DockPanel>
             <StackPanel  DockPanel.Dock="Left" Width="360">
                 <TextBlock Name="_txtMoveCount"></TextBlock>
@@ -27,7 +27,8 @@
                         </StackPanel>
                     </GroupBox>
                 </StackPanel>
-                <StackPanel Name="_GameOnDisplay" Visibility="Visible">
+                <TextBlock Name="_lbHeader" Height="200" Text="May the best Man/Bot Win!" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="36" TextWrapping="WrapWithOverflow" Padding="10"></TextBlock>
+                <StackPanel Name="_GameOnDisplay" Visibility="Visible" Height="300">
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                         <StackPanel HorizontalAlignment="Center" Margin="0,0,0,20">
                             <Label HorizontalAlignment="Center">Player One</Label>
@@ -49,10 +50,21 @@
                         <Button Name="_btnUndo" Height="20" Width="75" Click="UI_btnUndo_Click" Margin="0,0,20,0">Undo-Move</Button>
                         <Button Name="_btnRedo" Height="20" Width="75" Click="UI_btnRedo_Click" Margin="0,0,20,0">Redo-Move</Button>
                     </StackPanel>
-                    <ListBox Name="_lbStats" Width="360" MinHeight="500" HorizontalAlignment="Right" FontSize="10"/>
                 </StackPanel>
+                <DataGrid Name="DG1" ItemsSource="{Binding}" AutoGenerateColumns="False" Height="200">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Bot Brain" Binding="{Binding BotBrain}" />
+                        <DataGridTextColumn Header="CM" Binding="{Binding CheckMates}" />
+                        <DataGridTextColumn Header="SM" Binding="{Binding StaleMates}" />
+                        <DataGridTextColumn Header="D" Binding="{Binding Draws}" />
+                        <DataGridTextColumn Header="L" Binding="{Binding Losses}" />
+                        <DataGridTextColumn Header="Avg Moves" Binding="{Binding MovesAvg}" />
+                    </DataGrid.Columns>
+                </DataGrid>
+                <Label>CM = CheckMate, SM = StaleMate, D = Draw, L = Loss</Label>
+                <ListBox Name="_lbErrors" Width="360" Height="100" HorizontalAlignment="Right" FontSize="10" ScrollViewer.VerticalScrollBarVisibility ="Auto"/>
             </StackPanel>
-            <Label Name ="lHeader" DockPanel.Dock="Top" Height="73" Background="AliceBlue" Opacity="0.8" Content="May the best Man/Bot Win!" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" FontSize="36"></Label>
+            <Label DockPanel.Dock="Top" Height="73"></Label>
             <UniformGrid DockPanel.Dock="Bottom" Width="200" Height="73">
             </UniformGrid>
             <UniformGrid Loaded="MyMainPanel_Loaded" Name="MyMainPanel" HorizontalAlignment="Center" VerticalAlignment="Center">

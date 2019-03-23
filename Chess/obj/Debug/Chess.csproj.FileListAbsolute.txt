@@ -234,7 +234,6 @@ C:\Users\John\Desktop\GitHub\RoboChess\Chess\bin\Debug\System.Xml.XmlDocument.dl
 C:\Users\John\Desktop\GitHub\RoboChess\Chess\bin\Debug\System.Xml.XmlSerializer.dll
 C:\Users\John\Desktop\GitHub\RoboChess\Chess\bin\Debug\System.Xml.XPath.dll
 C:\Users\John\Desktop\GitHub\RoboChess\Chess\bin\Debug\System.Xml.XPath.XDocument.dll
-C:\Users\John\Desktop\GitHub\RoboChess\Chess\bin\Debug\ChessTools.dll
 C:\Users\John\Desktop\GitHub\RoboChess\Chess\obj\Debug\MainWindow.baml
 C:\Users\John\Desktop\GitHub\RoboChess\Chess\obj\Debug\Chess.g.resources
 C:\Users\John\Desktop\GitHub\RoboChess\Chess\obj\Debug\Chess.Properties.Resources.resources
@@ -357,3 +356,4 @@ C:\Users\jklassen31\Desktop\GitHub\RoboChess\Chess\obj\Debug\Chess.exe
 C:\Users\jklassen31\Desktop\GitHub\RoboChess\Chess\obj\Debug\Chess.pdb
 C:\Users\John\Desktop\GitHub\RoboChess\Chess\obj\Debug\PopUp.g.cs
 C:\Users\John\Desktop\GitHub\RoboChess\Chess\obj\Debug\PopUp.baml
+C:\Users\John\Desktop\GitHub\RoboChess\Chess\bin\Debug\ChessTools.dll

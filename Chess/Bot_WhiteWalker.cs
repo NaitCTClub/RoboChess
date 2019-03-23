@@ -54,14 +54,10 @@ namespace Chess
     public class Bot_WhiteWalker : BotController
     {
         private Random _rando = new Random();
-        private MoveValue _moveValue = new MoveValue();
 
         //              Add your global variables here
 
         public Bot_WhiteWalker() : base() {}
-        public Bot_WhiteWalker(Board board, Player player) : base(board, player)
-        {
-        }
 
 
         /////////////////////////////////////////////////////////////////////////////////////
@@ -69,7 +65,7 @@ namespace Chess
         //                  Your Bot Mouth Goes Here               *Only change the inside code
         //
         /////////////////////////////////////////////////////////////////////////////////////
-        public override ChessMove MyTurn() // [DONT CHANGE] Controller calls this to activate Bots turn
+        public override ChessMove MyTurn() // Game calls this to activate Bots turn
         {
             List<ChessMove> lsOfMoves =  GetAllMoves(); // Example
 
@@ -79,6 +75,10 @@ namespace Chess
             return GetTheBloodiest(lsOfMoves);            
         }
 
+        public override GamePiece Promotion() // Game calls this whenever your pawn can be promoted
+        {
+            return new Queen(); // Queen is da best
+        }
         /////////////////////////////////////////////////////////////////////////////////////
         //
         //                  Your Bot Brain Goes Here                *Example Code provided
@@ -95,7 +95,7 @@ namespace Chess
             // Iterate through all your gamepieces
             foreach (GamePiece piece in Me.MyPieces.FindAll(p => p.isAlive)) // Usefull, no point in moving a DEAD GamePiece
             {
-                List<ChessMove> moves = MainBoard.PossibleMoves(piece);
+                List<ChessMove> moves = VirtualBoard.PossibleMoves(piece);
 
                 lsOfMoves.AddRange(moves);
             }
@@ -106,101 +106,52 @@ namespace Chess
         // Example Function - Returns a single *ChessMove*
         private ChessMove GetTheBloodiest(List<ChessMove> lsMoves)
         {
+            RankOpponentPieces();
             List<ChessMove> attackMoves = lsMoves.FindAll(m => m.MoveType == Condition.Attack);
 
             if (attackMoves.Count > 0)
             {
-                _moveValue._sortType = MoveValue.SortType.Descending;
-                _moveValue._sortBy = MoveValue.SortBy.GamePieceCaptured;
+                attackMoves.OrderBy(mve => mve.PieceCaptured.Value); // Sorts by predifined values => RankOpponentPieces()
 
-                attackMoves.Sort(_moveValue); // Uses MoveValue Class to sort the list
-
-                return attackMoves.First();
+                return attackMoves.Last(); // Grab the highest value target
             }
 
             return lsMoves[_rando.Next(0, lsMoves.Count)];
         }
 
 
-    }
-
-    internal class MoveValue : IComparer<ChessMove>
-    {
-        public enum SortType { Ascending, Descending};
-        public enum SortBy { GamePieceMoved, GamePieceCaptured};
-        public SortType _sortType { get; set; }
-        public SortBy _sortBy { get; set; }
-
-        public MoveValue()
+        private void RankMyPieces()
         {
-            _sortType = SortType.Descending;
-            _sortBy = SortBy.GamePieceCaptured;
+            foreach(GamePiece piece in Me.MyPieces)
+            {
+                if (piece is King)
+                    piece.Value = 1000;
+                else if (piece is Queen)
+                    piece.Value = 9;
+                else if (piece is Rook)
+                    piece.Value = 6;
+                else if (piece is Bishop || piece is Knight)
+                    piece.Value = 5;
+                else
+                    piece.Value = 1;
+            }
         }
 
-        public int Compare(ChessMove mve1, ChessMove mve2)
+        private void RankOpponentPieces()
         {
-            int direction = _sortType == SortType.Ascending ? 1 : -1;
-            GamePiece p1;
-            GamePiece p2;
-
-            if (_sortBy == SortBy.GamePieceCaptured)
+            foreach (GamePiece piece in Opponent.MyPieces)
             {
-                p1 = mve1.PieceCaptured;
-                p2 = mve2.PieceCaptured;
-            }
-            else
-            {
-                p1 = mve1.PieceMoved;
-                p2 = mve2.PieceMoved;
-            }
-
-
-            if (p1 is null && p2 is null)
-                return 0;
-            if (p1 is null)
-                return -1 * direction;
-            if (p2 is null)
-                return direction;
-
-            if (p1.GetType() == p2.GetType())
-                return 0; // Same GamePiece type (Pawn == Pawn)
-
-            if (p1 is King) // Highest Value
-                return direction;
-            if(p1 is Queen) // Second Highest Value
-            {
-                if (p2 is Bishop || p2 is Knight || p2 is Rook || p2 is Pawn)
-                    return direction;
+                if (piece is King)
+                    piece.Value = 1000;
+                else if (piece is Queen)
+                    piece.Value = 9;
+                else if (piece is Rook)
+                    piece.Value = 6;
+                else if (piece is Bishop || piece is Knight)
+                    piece.Value = 5;
                 else
-                    return -1 * direction;
+                    piece.Value = 1;
             }
-            if (p1 is Rook) // Third Highest Value
-            {
-                if (p2 is Bishop || p2 is Knight || p2 is Pawn)
-                    return direction;
-                else
-                    return -1 * direction;
-            }
-            if (p1 is Bishop) // Tied 4th with Knight
-            {
-                if (p2 is Pawn)
-                    return direction;
-                if (p2 is Knight)
-                    return 0;
-                else
-                    return -1 * direction;
-            }
-            if (p1 is Knight) // Tied 4th with Bishop
-            {
-                if (p2 is Pawn)
-                    return direction;
-                if (p2 is Bishop)
-                    return 0;
-                else
-                    return -1 * direction;
-            }
-            else
-                return -1 * direction; // Pawn is on the bottom, no point in looking for smaller pieces :( awe
         }
     }
 }
