@@ -58,24 +58,28 @@ namespace Chess
         //              Add your global variables here
 
         public Bot_OberynMartell() : base() {}
-
-
-        /////////////////////////////////////////////////////////////////////////////////////
-        //
-        //                  Your Bot Mouth Goes Here               *Only change the inside code
-        //
-        /////////////////////////////////////////////////////////////////////////////////////
-        public override ChessMove MyTurn() // Game calls this to activate Bots turn
+        //=======================================================================================
+        //                  Initialize your variables here         *Only change the inside code
+        //=======================================================================================
+        public override void RefreshMemory()
         {
-            List<ChessMove> lsOfMoves =  GetAllMoves(); // Example
 
-            if (lsOfMoves.Count == 0) // If you have no Moves then CheckMate!
-                return new ChessMove(null, null, null, null, Condition.Illegal);
+        }
+
+        //=======================================================================================
+        //                  Your Bot's Move Handler
+        //=======================================================================================
+        public override ChessMove MyTurn() // Return a legal move for one of your GamePieces
+        {
+            List<ChessMove> lsOfMoves = GetAllMoves(); // Example
 
             return GetTheSafest(lsOfMoves);
         }
 
-        public override GamePiece Promotion() // Game calls this whenever your pawn can be promoted
+        //=======================================================================================
+        //                  Your Bot's Promotion Handler
+        //=======================================================================================
+        public override GamePiece Promotion() // Return a promotion Piece for your pawn in the endzone
         {
             return new Queen(); // Queen is da best
         }
@@ -84,12 +88,9 @@ namespace Chess
         //
         //                  Your Bot Brain Goes Here                *Example Code provided
         //
-        ///////////////////////////////////////////////////////////////////////////////////// 
+        /////////////////////////////////////////////////////////////////////////////////////
 
-        //***Let your strategic brain go nutz here!! All of this below is just **Example*** code
-
-        // Example Function - Returns a List of All legal *ChessMove* for your *GamePiece*'s
-        public List<ChessMove> GetAllMoves()
+        public List<ChessMove> GetAllMoves() // Find all legal Moves
         {
             List<ChessMove> lsOfMoves = new List<ChessMove>();
 

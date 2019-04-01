@@ -59,36 +59,39 @@ namespace Chess
 
         public Bot_WhiteWalker() : base() {}
 
-
-        /////////////////////////////////////////////////////////////////////////////////////
-        //
-        //                  Your Bot Mouth Goes Here               *Only change the inside code
-        //
-        /////////////////////////////////////////////////////////////////////////////////////
-        public override ChessMove MyTurn() // Game calls this to activate Bots turn
+        //=======================================================================================
+        //                  Initialize your variables here         *Only change the inside code
+        //=======================================================================================
+        public override void RefreshMemory()
         {
-            List<ChessMove> lsOfMoves =  GetAllMoves(); // Example
-
-            if (lsOfMoves.Count == 0) // If you have no Moves then CheckMate!
-                return new ChessMove(null, null, null, null, Condition.Illegal);
-
-            return GetTheBloodiest(lsOfMoves);            
+            RankOpponentPieces();
         }
 
-        public override GamePiece Promotion() // Game calls this whenever your pawn can be promoted
+        //=======================================================================================
+        //                  Your Bot's Move Handler
+        //=======================================================================================
+        public override ChessMove MyTurn() // Return a legal move for one of your GamePieces
+        {
+            List<ChessMove> lsOfMoves = GetAllMoves(); // Example
+
+            return GetTheBloodiest(lsOfMoves);
+        }
+
+        //=======================================================================================
+        //                  Your Bot's Promotion Handler
+        //=======================================================================================
+        public override GamePiece Promotion() // Return a promotion Piece for your pawn in the endzone
         {
             return new Queen(); // Queen is da best
         }
+
         /////////////////////////////////////////////////////////////////////////////////////
         //
         //                  Your Bot Brain Goes Here                *Example Code provided
         //
         ///////////////////////////////////////////////////////////////////////////////////// 
-
-        //***Let your strategic brain go nutz here!! All of this below is just **Example*** code
-
-        // Example Function - Returns a List of All legal *ChessMove* for your *GamePiece*'s
-        public List<ChessMove> GetAllMoves()
+        
+        public List<ChessMove> GetAllMoves() // Find All Legal Moves
         {
             List<ChessMove> lsOfMoves = new List<ChessMove>();
 
@@ -106,7 +109,6 @@ namespace Chess
         // Example Function - Returns a single *ChessMove*
         private ChessMove GetTheBloodiest(List<ChessMove> lsMoves)
         {
-            RankOpponentPieces();
             List<ChessMove> attackMoves = lsMoves.FindAll(m => m.MoveType == Condition.Attack);
 
             if (attackMoves.Count > 0)

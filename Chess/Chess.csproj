@@ -80,7 +80,7 @@
     <Compile Include="Bishop.cs" />
     <Compile Include="Board.cs" />
     <Compile Include="BotRecord.cs" />
-    <Compile Include="Bot_NoOne.cs" />
+    <Compile Include="Bot_YourBot.cs" />
     <Compile Include="Bot_OberynMartell.cs" />
     <Compile Include="Bot_WhiteWalker.cs" />
     <Compile Include="BotController.cs" />

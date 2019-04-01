@@ -11,7 +11,7 @@ namespace Chess
     {
         public Board BoardArchive { get; set; }
         public GameResult Result { get; set; }
-        public BotController Winner { get; set; }
+        public Player Winner { get; set; }
         public DateTime Date { get; set; }
 
         public GameStat(Board archiveBoard)
@@ -23,10 +23,15 @@ namespace Chess
 
             Result = archiveBoard.Result;
 
-            if (archiveBoard.WhosTurn == archiveBoard.PlayerTwo)
-                Winner = archiveBoard.PlayerOne.BotBrain;
+            if (Result == GameResult.CheckMate || Result == GameResult.StaleMate)
+            {
+                if (archiveBoard.WhosTurn == archiveBoard.PlayerTwo)
+                    Winner = archiveBoard.PlayerOne;
+                else
+                    Winner = archiveBoard.PlayerTwo;
+            }
             else
-                Winner = archiveBoard.PlayerTwo.BotBrain;
+                Winner = null;
 
             Date = DateTime.Now;
         }

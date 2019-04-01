@@ -11,6 +11,7 @@ using ChessTools;
 
 namespace Chess
 {
+ 
     public static class ChessImages
     {
         /// <summary>

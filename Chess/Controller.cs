@@ -20,6 +20,12 @@ namespace Chess
 {
     public class Controller : Window
     {
+        public struct nGame
+        {
+            public string bot1;
+            public string bot2;
+            public int gameCount;
+        }
         public MainWindow GUI { get; private set; }
 
         public Board LiveBoard { get; private set; }
@@ -30,24 +36,34 @@ namespace Chess
         public List<GameStat> GameStats { get; set; } = new List<GameStat>();
         public ObservableCollection<BotRecord> BotRecords { get; set; }
 
-        public volatile bool gameOn = false;
         public bool GameOnView {
             set {
                 if (!value)
                 {
                     gameOn = false;
-                    GUI._GameOnDisplay.Visibility = System.Windows.Visibility.Hidden;
+                    if(!nGamesOn)
+                        GUI.SetWindow_NoGameInProgress();
                 }
                 else
                 {
                     gameOn = true;
-                    GUI._GameOnDisplay.Visibility = System.Windows.Visibility.Visible;
+                    if(nGamesPause)
+                        GUI.SetWindow_PausedGameinProgress();
+                    else
+                        GUI.SetWindow_ActiveGameinProgress();
+                    //GUI._GameOnDisplay.Visibility = System.Windows.Visibility.Visible;
                 }
             }
         }
         public volatile int speed = 100;
-        public volatile bool animate = true;
+        public volatile bool animate = true; // Flag to animate bot moves
         private Thread _BotMatchThread = null;
+        private Thread _nMatchesThread = null;
+        public volatile bool gameOn = false; // Flag of active Game
+        public volatile bool nGamesOn = false; // Flag for active Multi Match Thread
+        public volatile bool nGamesPause = false; // Flag to Pause Bot Thread
+        public volatile bool RefreshBoard = true;
+        public volatile bool ViewBotsEnd = true;
 
         public Controller(MainWindow gui)
         {
@@ -55,25 +71,63 @@ namespace Chess
             GUI = gui;
         }
 
-        public bool PlayNGames(int gameCount) // ** FUTURE Method
+        public void PlayNGamesThreadStart(nGame game)
         {
+            _nMatchesThread = new Thread(PlayNGames);
+            _nMatchesThread.IsBackground = true;
+            _nMatchesThread.Start(game);
+        }
+
+        private void PlayNGames(object obj)
+        {
+            if (nGamesOn)
+                return; // Redundancy
+
+            nGame game = (nGame)obj;
+            nGamesOn = true;
             int i = 0;
-            while (i < gameCount)
-                i++;//NewGame()
-            return true;
+
+            while (i < game.gameCount && nGamesOn)
+            {
+                i++;
+                Dispatcher.Invoke(new Action( delegate () { NewGame(game.bot1, game.bot2); }));
+                while (gameOn) ; // Wait for game to end
+                if (ViewBotsEnd)
+                    Thread.Sleep(2000);
+                else
+                    Thread.Sleep(10);
+            }
+
+            Dispatcher.Invoke(new Action(delegate () { GUI.SetWindow_NoGameInProgress(); }));
+            nGamesOn = false;
+            _nMatchesThread = null;
+        }
+
+        public void CancelGame()
+        {
+            LiveBoard.Result = GameResult.BoardFlipped;
+            nGamesPause = false;
+            nGamesOn = false;
+            GameOnView = false;
         }
 
         public bool NewGame(string brain1, string brain2)
         {
-            if (gameOn) //!(_BotMatchThread is null)) // Check if current Bot Match in progress
+            if (gameOn) // Check if current Match in progress **Isnt required anymore, I think..
             {
-                LiveBoard.Result = GameResult.BoardFlipped;
-                GameOnView = false; // Flag Bot Match to End
-                GUI._btnNewGame.Content = "New Game";
+                // Stop current Match
+                CancelGame();
+                if(!(_BotMatchThread is null))
+                    _BotMatchThread.Abort(); // BRUTE Force
+                
+                NewGame(brain1, brain2);
                 return false;
             }
-            
-            GUI._btnNewGame.Content = "End Game";
+            if (brain1.Equals("Human") || brain2.Equals("Human"))
+                GUI._HumanGameCommands.Visibility = Visibility.Visible;
+            else
+                GUI._HumanGameCommands.Visibility = Visibility.Collapsed;
+
             GameOnView = true;
 
             if (!(LiveBoard is null))
@@ -92,10 +146,11 @@ namespace Chess
 
             GUI.RenameHeader($"Go {WhosTurn}");
 
+            // ======== Start the Game =================
             if (playerOne.isBot && playerTwo.isBot)
-                BotBattleThreadStart();                 // Bot vs Bot (Entire Match Thread)
+                BotBattleThreadStart();                 // Bot vs Bot (new Thread for entire Match)
             else if (WhosTurn.isBot)
-                BotThreadStart(WhosTurn); // Bots first move (1 Turn Thread)
+                BotThreadStart(WhosTurn);               // Bots first move (new Thread for 1 turn)
             else
                 return true;                            // Human Players first move
 
@@ -134,7 +189,7 @@ namespace Chess
             //==============================================================================
             if (focusCell.Status == Condition.Default)
             {
-                LiveBoard.HighlightBoard(); // ClearBoard highlights
+                LiveBoard.UpdateBoardGUI(); // ClearBoard highlights
 
                 if (focusCell.Piece is null || focusCell.Piece.TeamColor != WhosTurn.TeamColor)
                     return;
@@ -143,7 +198,7 @@ namespace Chess
                 GamePiece piece = focusCell.Piece;
                 TempMoves = LiveBoard.PossibleMoves(piece);
 
-                LiveBoard.HighlightBoard(TempMoves);
+                LiveBoard.UpdateBoardGUI(TempMoves);
 
                 GUI.RenameHeader("Choose target Cell");
             }
@@ -157,8 +212,7 @@ namespace Chess
 
                 // MOVE GAME PIECE 
                 LiveBoard.TakeTurn(move);
-
-                GUI.DispatchInvoke_AddMove(move);
+                GUI.UpdateWindow();
 
                 if (LiveBoard.Result != GameResult.InProgress)
                     Fin(); // GAME complete
@@ -217,6 +271,12 @@ namespace Chess
 
             while(LiveBoard.Result == GameResult.InProgress && gameOn)
             {
+                if(nGamesPause)
+                {
+                    Dispatcher.Invoke(new Action(delegate () { GUI.UpdateWindow(); }));
+                    while (nGamesPause) ;
+                }
+
                 BotMove(WhosTurn);
 
                 //Console.WriteLine($"BotMove: {WhosTurn}");
@@ -241,17 +301,18 @@ namespace Chess
             ChessMove move = activePlayer.BotBrain.MyTurn(); // Request Move from Bot
 
             if (move.From is null)
-                return; //Error with Bot **ADD Catch
+                return; //Error with Bot **ADD Catch (BoardFlipped by bot)
 
             move = VirtualtoLive(move); // Switch references to LiveBoard
 
-            if (animate)
-                AnimateMove(move); // Slow down what happened
+            if (animate) // Animate Move
+                AnimateMove(move);
 
             // MOVE GAME PIECE 
             LiveBoard.TakeTurn(move);
 
-            GUI.DispatchInvoke_AddMove(move);            
+            if (RefreshBoard) // Update Window
+                Dispatcher.Invoke(new Action(delegate () { GUI.UpdateWindow(); }));
         }
 
         /////////////////////////////////////////////////////////////////////////////////////
@@ -313,18 +374,24 @@ namespace Chess
         {
             Player winner = LiveBoard.PlayerOne == WhosTurn ? LiveBoard.PlayerTwo : LiveBoard.PlayerOne;
             Player loser = LiveBoard.PlayerOne == WhosTurn? LiveBoard.PlayerOne : LiveBoard.PlayerTwo;
-
-            GUI._btnNewGame.Content = "New Game";
-            if(LiveBoard.Result == GameResult.BoardFlipped)
-                GUI.RenameHeader($"{LiveBoard.Result}! We will never Know..");
-            else if(LiveBoard.Result == GameResult.Draw)
-                GUI.RenameHeader($"Draw. No end game here.");
+            string result;
+            
+            if (LiveBoard.Result == GameResult.BoardFlipped)
+                result = $"{LiveBoard.Result}! We will never Know..";
+            else if (LiveBoard.Result == GameResult.Draw)
+                result = $"Draw. No end game here.";
             else
-                GUI.RenameHeader($"{LiveBoard.Result}! {winner} Wins! {LiveBoard.MoveArchive.Count/2} moves");
+                result = $"{LiveBoard.Result}! {winner} Wins! {LiveBoard.MoveArchive.Count / 2} moves";
 
-            GUI._lbErrors.Items.Add($"Game Complete");
-            //GUI._lbBotRecords.Items.Clear();
-            //GUI._lbBotRecords.Items.Add();
+            GUI.RenameHeader(result);
+            GUI.lbMoves.Items.Insert(0, $"Game Complete - {result}");
+            GUI.lbMoves.Items.Insert(0, "");
+            GUI._lbErrors.Items.Insert(0, $"Game Complete - {result}");
+
+            if(!nGamesOn)
+                GUI.SetWindow_NoGameInProgress();
+            if(ViewBotsEnd)
+                LiveBoard.UpdateBoardGUI();
 
             GameStat newGameStat = new GameStat(LiveBoard);
             GameStats.Add(newGameStat);
@@ -337,6 +404,8 @@ namespace Chess
             //Bind the DataGrid to the Bot Records
             GUI.DG1.DataContext = BotController.GetBotRecords();
 
+            if (nGamesOn)
+                GUI._txtNGames.Text = (int.Parse(GUI._txtNGames.Text) - 1).ToString();
 
             GameOnView = false;
         }

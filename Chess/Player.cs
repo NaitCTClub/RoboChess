@@ -50,6 +50,7 @@ namespace Chess
                 return;
 
             BotBrain.UpdateBrain(liveBoard, this);
+            BotBrain.RefreshMemory();
         }
 
         public override string ToString()

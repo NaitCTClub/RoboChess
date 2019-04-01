@@ -104,19 +104,6 @@ namespace Chess
             }
         }
 
-        // Toggles active player after a move
-        public void ToggleTurn()
-        {
-            WhosTurn.isChecked = false;
-
-            if (WhosTurn == PlayerOne)
-                WhosTurn = PlayerTwo;
-            else
-                WhosTurn = PlayerOne;
-
-            ClearEnpassant(); // Enpassant option expires after one turn
-        }
-
         /// <summary>
         /// Returns list of All legal ChessMoves for a GamePiece
         /// </summary>
@@ -303,32 +290,7 @@ namespace Chess
             return true;
         }
 
-        // Determines if theres a CHECKMATE against 'who'
-        public bool CheckContinue(Player who)
-        {
-            // ** Future implementation of Draw (50 moves no Capture, 10 repeated moves)
-
-            List<ChessMove> checkMoves = new List<ChessMove>();
-
-            // Look up all possible moves for 'who'
-            foreach (GamePiece piece in who.MyPieces.FindAll(gp => gp.isAlive))
-            {
-                checkMoves.AddRange(PossibleMoves(piece));
-                if (checkMoves.Count > 0 && StaleMoveCount < StaleMax)
-                    return true; // At least one possible move, No CheckMate, No Draw
-            }
-
-            if (StaleMoveCount == StaleMax)
-                Result = GameResult.Draw; // Too many moves with no Pieces captured
-            else if (IsSafe(who.MyPieces.Find(gp => gp is King).Location, who))
-                Result = GameResult.StaleMate; // Not able to move but not Checked
-            else
-                Result = GameResult.CheckMate;
-
-            return false;
-        }
-
-        public void HighlightBoard(List<ChessMove> moves = null)
+        public void UpdateBoardGUI(List<ChessMove> moves = null)
         {
             if (isVirtual)
                 return;
@@ -346,12 +308,25 @@ namespace Chess
             }
         }
 
+        // Toggles active player after a move
+        public void ToggleTurn()
+        {
+            WhosTurn.isChecked = false;
+
+            if (WhosTurn == PlayerOne)
+                WhosTurn = PlayerTwo;
+            else
+                WhosTurn = PlayerOne;
+
+            ClearEnpassant(); // Enpassant option expires after one turn
+        }
+
         /////////////////////////////////////////////////////////////////////////////////////
         //
         //                          Move Methods
         //
         /////////////////////////////////////////////////////////////////////////////////////
-        
+
 
         //==============================================================================
         //                         Move GamePiece
@@ -371,6 +346,34 @@ namespace Chess
 
 
             return true;
+        }
+
+        // Determines if theres a CHECKMATE against 'who'
+        public bool CheckContinue(Player who)
+        {
+            // ** Future implementation of Draw (50 moves no Capture, 10 repeated moves)
+
+            List<ChessMove> checkMoves = new List<ChessMove>();
+
+            // Check if who is Checked
+            who.isChecked = !IsSafe(who.MyPieces.Find(gp => gp is King).Location, who);
+
+            // Look up all possible moves for 'who'
+            foreach (GamePiece piece in who.MyPieces.FindAll(gp => gp.isAlive))
+            {
+                checkMoves.AddRange(PossibleMoves(piece));
+                if (checkMoves.Count > 0 && StaleMoveCount < StaleMax)
+                    return true; // At least one possible move, No CheckMate, No Draw
+            }
+
+            if (StaleMoveCount == StaleMax)
+                Result = GameResult.Draw; // Too many moves with no Pieces captured
+            else if (IsSafe(who.MyPieces.Find(gp => gp is King).Location, who))
+                Result = GameResult.StaleMate; // Not able to move but not Checked
+            else
+                Result = GameResult.CheckMate;
+
+            return false;
         }
 
         //==============================================================================
@@ -427,6 +430,7 @@ namespace Chess
 
             Moves_Index++;
             MoveArchive.Add(newMove);
+            controller.GUI.DispatchInvoke_AddMove(newMove);
         }
 
         private void ClearArchive()
@@ -439,10 +443,16 @@ namespace Chess
         //==============================================================================
         //                   The Actual Process Of Moving GamePiece
         //==============================================================================
+        /// <summary>
+        ///  Move a Gamepiece on the board using a ChessMove struct, YOU MUST capture returned ChessMove if foreshadow is set to false to properly UndoMovePiece()
+        /// </summary>
+        /// <param name="move">Set of instructions for the move, must be constructed by PossibleMove()</param>
+        /// <param name="foreShadow">foreShadow waives Pawn promotions.</param>
+        /// <returns></returns>
         public ChessMove MovePiece(ChessMove move, bool foreShadow = false)
         {
             if (!foreShadow)
-                StaleMoveCount = move.MoveType != Condition.Attack ? StaleMoveCount + 1 : 0;
+                StaleMoveCount = move.PieceCaptured is null ? StaleMoveCount + 1 : 0;
 
             if (move.MoveType == Condition.Attack)
             {
@@ -556,7 +566,7 @@ namespace Chess
                 passedCell.enPassantPawn = null;
         }
 
-        // Used for promoting Pawns from Bot Threads to prevent Breaks trying to create a GamePiece in off thread
+        // Proloaded Piece's with Image used for promoting Pawns. (Prevents crossthread errors creating a GamePiece in another thread)
         private List<GamePiece> GeneratePromotionPieces()
         {
             List<GamePiece> white_Blacks = new List<GamePiece>();

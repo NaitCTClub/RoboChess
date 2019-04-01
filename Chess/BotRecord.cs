@@ -26,18 +26,24 @@ namespace Chess
             if (results.Result == GameResult.BoardFlipped)
                 return; //Game ended prematurely
 
-            if (results.Result == GameResult.Draw)
-                bot.Record.Draws++;
-            else if (results.Winner.GetType().Equals(bot.GetType())) // Winner!!
+            if (results.Result == GameResult.Draw || results.Winner is null)
+            {
+                bot.Record.Draws++; // Draw
+            }
+            else if (results.Winner.BotBrain is null)
+            {
+                bot.Record.Losses++; // Winner is a Human
+            }
+            else if (results.Winner.BotBrain.GetType().Equals(bot.GetType())) // I am the Winner!!
             {
                 if (results.Result == GameResult.CheckMate)
                     bot.Record.CheckMates++;
                 else if (results.Result == GameResult.StaleMate)
                     bot.Record.StaleMates++;
             }
-            else // Loser...
+            else
             {
-                bot.Record.Losses++;
+                bot.Record.Losses++; // Loser...
             }
 
             bot.Record.MovesAvg = (bot.Record.MovesAvg + (results.BoardArchive.Moves_Index / 2)) / 2;

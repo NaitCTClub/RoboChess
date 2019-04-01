@@ -26,7 +26,7 @@ namespace Chess
         {
             BotBrains = GetBotBrains();
         }
-
+        public abstract void RefreshMemory();
         public abstract ChessMove MyTurn();
         public abstract GamePiece Promotion();
 
