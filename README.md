@@ -1,4 +1,6 @@
 # RoboChess
+C# .Net using WPF
+
 a Chess game that bots play
 
 We are long way from AI computers, but that is the end goal.
