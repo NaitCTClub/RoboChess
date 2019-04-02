@@ -12,7 +12,7 @@ GETTING STARTED
 3. Edit the Bot_YourBot.cs File to your liking (Read the comments)
 4. Run the program to play with your new Bot!
 
-If you have trouble having rights to create your own branch of this project please let me know via username: jklassen
+If you have any questions or requests for this project please let me know via username: jklassen
 
 Thanks for reading!
 Jon Klassen
