@@ -18,11 +18,6 @@ Thanks for reading!
 Jon Klassen
 
 
-//=======================================================================================================================================
-//  ROBOCHESS                                                BOT - Skeleton Code
-//                                                          Created by Jon Klassen
-//                                                      Last Modified: March 30, 2019
-//
 // Description: This is where the brain of the operation lives. You are supplied a *VirtualBoard* that contains all related objects for
 //              the board's environment. I have supplied a few helper functions and the rest is up to you. If
 //              you have any questions or theres anything I missed, please let me know on GitHub https://github.com/NaitCTClub/RoboChess
