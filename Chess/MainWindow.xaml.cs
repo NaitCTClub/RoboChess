@@ -33,12 +33,6 @@ namespace Chess
             InitializeComponent();
         }
 
-        private void Button_Click(object sender, RoutedEventArgs e)
-        {
-        }
-
-
-
         private void MyMainPanel_Loaded(object sender, RoutedEventArgs e)
         {
             // Pass the command wand off to Controller
@@ -77,8 +71,6 @@ namespace Chess
                 controller.CancelGame();
                 return;
             }
-
-            // Button = 'New Game'
             
             // Get the checked radio Button that defines Player's 'Brain'
             string playerOneBrain = (string)_playerOneBots.Children.OfType<RadioButton>().ToList().Find(rb => (bool)rb.IsChecked).Content;
@@ -203,10 +195,6 @@ namespace Chess
                 controller.ViewBotsEnd = true;
             else
                 controller.ViewBotsEnd = false;
-        }
-
-        private void CheckBox_Checked(object sender, RoutedEventArgs e)
-        {
         }
 
         /////////////////////////////////////////////////////////////////////////////////////

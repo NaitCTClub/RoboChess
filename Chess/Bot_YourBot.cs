@@ -89,8 +89,9 @@ namespace Chess
         //=======================================================================================
         public override void RefreshMemory()
         {
-            // Set all your global variables here that reference the board, players, and cells. 
-            // Each turn you have new references. So you need to update your variables.
+            // Set all your global variables references to the board, players, and cells here. 
+            // Each turn you have new instances of the virtual items (New References)
+
             myKing = Me.MyPieces.Find(gp => gp is King); // Research 'Lamba' for help filtering Lists
         }
 
