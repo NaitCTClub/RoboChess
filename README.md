@@ -1,21 +1,20 @@
 # RoboChess
-Chess game that bots play
+C# .Net using WPF
+
+a Chess game that bots play
 
 We are long way from AI computers, but that is the end goal.
 
 At this point you are able to play 1v1 with another human on the same pc, 
-Or against a bot of your making.. ooooo exciting 
+Or against a bot of your making.. Sooooo exciting.
 
-- Next goal is to have ability to play on seperate computers over wifi.
+GETTING STARTED
+1. Download the RoboChess Folder
+2. Open the Chess.sln file in the first layer of the folder.
+3. Edit the Bot_YourBot.cs File to your liking (Read the comments)
+4. Run the program to play with your new Bot!
 
-Currently there is 5 main classes that communicate in a object oriented manner:
- - MainWindow.cs - Controls the UI front for the user
- - Controller.cs - The brains behind how everything interacts
- - Board.cs - Contains the players & the cells (8x8)
- - Cells.cs - Contains the location of the cell, the GamePiece in posession of the cell, and its appearence attributes
- - GamePiece.cs - Contains the baseclass of the specific game piece and its owner, subclasses: King.cs, Queen.cs, Bishop.cs, etc.
-  
-If you have trouble having rights to create your own branch of this project please let me know via username: jklassen
+If you have any questions or requests for this project please let me know via username: jklassen
 
-thanks for reading!
+Thanks for reading!
 Jon Klassen
