@@ -96,7 +96,7 @@ namespace Chess
             List<ChessMove> lsOfMoves = new List<ChessMove>();
 
             // Iterate through all your gamepieces
-            foreach (GamePiece piece in Me.MyPieces.FindAll(p => p.isAlive)) // Usefull, no point in moving a DEAD GamePiece
+            foreach (GamePiece piece in Me.MyPieces.FindAll(p => p.isAlive)) // Useful, no point in moving a DEAD GamePiece
             {
                 List<ChessMove> moves = VirtualBoard.PossibleMoves(piece);
 

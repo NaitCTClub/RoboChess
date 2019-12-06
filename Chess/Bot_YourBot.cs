@@ -51,8 +51,8 @@
 ///     VirtualBoard.MovePiece() ---- Allows you to see the board one step ahead. Returns modified ChessMove if pawn is promoted
 ///                                   *Careful, if Pawn is moved forward you MUST update *ChessMove* to the returned *ChessMove*
 ///     VirtualBoard.UndoMovePiece()- Self explanatory here. BUT NOTE:
-///                                   Move & UndoMove are must maintain valid stack sequence. MovePiece is the 'PUSH' and UndoMovePiece is the 'PULL'.
-///                                   First 'PUSH' is the Last 'PULL' (Like a stack of plates, first one off is the last one back on)
+///                                   Move & UndoMove must maintain valid stack sequence. MovePiece is the 'PUSH' and UndoMovePiece is the 'PULL'.
+///                                   First 'PUSH' is the Last 'PULL' (Like a stack of plates, first plate on the stack is the last one off the stack)
 ///                                   Last MovePiece is then First UndoMovePiece.
 ///                                   
 ///     Me.isChecked ---------------- Bool, True if you are Checked. *Will not update with your MovePiece(), UndoMovePiece()
@@ -76,11 +76,11 @@ namespace Chess
 {
     public class Bot_YourBot : BotController 
     {
-        private Random _rando = new Random();
+        private Random _rando = new Random(); // for examples
 
         //              Declare global variables here
 
-        private GamePiece myKing; // Example
+        private GamePiece myKing; // for examples
 
         public Bot_YourBot() : base() {} // [CHANGE NAME]
 
